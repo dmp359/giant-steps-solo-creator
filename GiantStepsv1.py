@@ -209,11 +209,10 @@ viio_ = 8
 # Create the necessary musical data
 score = Score("Giant Steps", 200.0) 
  
-pianoPart    = Part(PIANO, 0)
-
 themePhrase = Phrase(0.0)
 
 piano = Part(BRIGHT_ACOUSTIC, 0)  # Piano to MIDI channel 0
+sax = Part(TENOR_SAX, 1)  # Sax to MIDI channel 1
 
 #----CONFIG CONSTANTS---------------------
 BEATS_PER_MEASURE = 4.0
@@ -242,15 +241,26 @@ CHORD_LIST = [BMaj7, D7, GMaj7, Bb7, Ebmaj7, Amin7, D7, GMaj7, Bb7, Ebmaj7, FS7,
 RHYTHM_LIST = [HN, HN, HN, HN, WN, HN, HN, HN, HN, HN, HN, WN, HN, HN, WN, 
                    HN, HN, WN, HN, HN, WN, HN, HN, WN, HN, HN]
 # TODO: Randomize these inversions instead of 0's
-#---------Comp the form------------
+#---------Comp the form-----------------------------------
 for i in range(NUM_REPEATS_OF_FORM):
     for chord, rhythm in zip(CHORD_LIST, RHYTHM_LIST):
         pianoMelody1.addNoteList([chord.pitches], [rhythm])
-#----------------------------------
+#---------------------------------------------------------
 
 
+#================================================================================
+# SOLOIST
+#================================================================================
+soloMelody = Phrase()
+sax.addPhrase(soloMelody)
+
+
+#=======================================
+# PLAY
+#=======================================
 # add parts to score
 score.addPart(piano)
- 
+score.addPart(sax)
+
 # play score
 Play.midi(score)
