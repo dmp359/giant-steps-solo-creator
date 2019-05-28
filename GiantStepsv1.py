@@ -207,9 +207,7 @@ viio_ = 8
 # GiantSteps.py
 # ------------------------------------------------------------------------------------------------------------------------------------------------------
 # Create the necessary musical data
-score = Score("Giant Steps", 200.0) 
- 
-themePhrase = Phrase(0.0)
+score = Score("Giant Steps", 260.0) 
 
 piano = Part(BRIGHT_ACOUSTIC, 0)  # Piano to MIDI channel 0
 sax = Part(TENOR_SAX, 1)  # Sax to MIDI channel 1
@@ -218,6 +216,17 @@ sax = Part(TENOR_SAX, 1)  # Sax to MIDI channel 1
 BEATS_PER_MEASURE = 4.0
 NUM_REPEATS_OF_FORM = 4
 
+#---MUSICAL CONSTANTS-----------------------------
+# See https://jythonmusic.me/api/midi-constants/scale/
+class JazzChord(Chord):
+  def __init__(self,root,quality,inversion=0):
+    Chord.__init__(self,root,quality,inversion=0)
+    if quality is MAJOR_SEVENTH:
+        self.scale = MAJOR_SCALE
+    elif quality is MINOR_SEVENTH:
+        self.scale = AEOLIAN_SCALE
+    elif quality is DOMINANT_SEVENTH:
+        self.scale = MIXOLYDIAN_SCALE
 #================================================================================
 # PIANO
 #================================================================================
@@ -225,15 +234,15 @@ pianoMelody1 = Phrase()
 piano.addPhrase(pianoMelody1)
 
 #---------CHORDS-------------------
-BMaj7 = Chord(B4, MAJOR_SEVENTH, 0)
-D7 = Chord(D4, DOMINANT_SEVENTH, 0)
-GMaj7 = Chord(G4, MAJOR_SEVENTH, 0)
-Bb7 = Chord(BF4, DOMINANT_SEVENTH, 0)
-Ebmaj7 = Chord(EF4, MAJOR_SEVENTH, 0)
-Amin7 = Chord(A4, MINOR_SEVENTH, 0)
-FS7 = Chord(FS4, DOMINANT_SEVENTH, 0)
-CSmin7 = Chord(CS4, MINOR_SEVENTH, 0)
-Fmin7 = Chord(F4, MINOR_SEVENTH, 0)
+BMaj7 = JazzChord(B4, MAJOR_SEVENTH, 0)
+D7 = JazzChord(D4, DOMINANT_SEVENTH, 0)
+GMaj7 = JazzChord(G4, MAJOR_SEVENTH, 0)
+Bb7 = JazzChord(BF4, DOMINANT_SEVENTH, 0)
+Ebmaj7 = JazzChord(EF4, MAJOR_SEVENTH, 0)
+Amin7 = JazzChord(A4, MINOR_SEVENTH, 0)
+FS7 = JazzChord(FS4, DOMINANT_SEVENTH, 0)
+CSmin7 = JazzChord(CS4, MINOR_SEVENTH, 0)
+Fmin7 = JazzChord(F4, MINOR_SEVENTH, 0)
 #--------FORM----------------------
 CHORD_LIST = [BMaj7, D7, GMaj7, Bb7, Ebmaj7, Amin7, D7, GMaj7, Bb7, Ebmaj7, FS7,
                   BMaj7, Fmin7, Bb7, Ebmaj7, Amin7, D7, GMaj7, CSmin7, FS7, BMaj7,
@@ -254,7 +263,12 @@ for i in range(NUM_REPEATS_OF_FORM):
 soloMelody = Phrase()
 sax.addPhrase(soloMelody)
 
-
+# I.e. 5th above root of chord, root, root, 2nd above root, etc...
+DOWN_BEAT_SCALE_DEGREES = [5, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
+                           4, 5, 2, 1, 1, 1, 6, 1, 6, 3]
+for i in range(NUM_REPEATS_OF_FORM):
+    for chord, rhythm, degree in zip(CHORD_LIST, RHYTHM_LIST, DOWN_BEAT_SCALE_DEGREES):
+        soloMelody.addNoteList([chord.pitches[0] + chord.scale[degree - 1]], [rhythm])
 #=======================================
 # PLAY
 #=======================================
