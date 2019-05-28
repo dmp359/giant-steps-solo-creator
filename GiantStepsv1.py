@@ -316,7 +316,9 @@ def create_line(start, end, jazz_chord):
     elif (start is jazz_chord.pitches[3]):
         jazz_chord.invert(3)
         return jazz_chord.pitches
-    
+   
+    # TODO: Remaining possibilities
+    # Else, just return an arpeggiated chord for now
     return jazz_chord.pitches
 #================================================================================
 # SOLOIST
@@ -342,7 +344,8 @@ for i, chord in enumerate(CHORD_LIST):
     # Create a line to connect to next_down_beat
     line = create_line(current_down_beat, next_down_beat, chord)
     
-    if (DIRECTIONS[i] is 0):
+    # Determine its direction. Default from create_line() is ascending
+    if DIRECTIONS[i] is 0:
         line.reverse()
  
     for note in line:
