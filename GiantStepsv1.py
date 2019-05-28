@@ -328,6 +328,9 @@ sax.addPhrase(soloMelody)
 # Taken from Coltrane's first chorus
 DOWN_BEAT_SCALE_DEGREES = [5, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
                            4, 5, 2, 1, 1, 1, 6, 1, 6, 3]
+
+DIRECTIONS = [0, 1, 0, 0, 1, 0, 1,
+    1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]
 for i, chord in enumerate(CHORD_LIST):
     current_down_beat = chord.pitches[0] + chord.scale[DOWN_BEAT_SCALE_DEGREES[i] - 1] # TODO: Octave displacement
     if i >= len(CHORD_LIST) - 1:
@@ -338,6 +341,10 @@ for i, chord in enumerate(CHORD_LIST):
     
     # Create a line to connect to next_down_beat
     line = create_line(current_down_beat, next_down_beat, chord)
+    
+    if (DIRECTIONS[i] is 0):
+        line.reverse()
+ 
     for note in line:
         soloMelody.addNote(note, EN)
         
