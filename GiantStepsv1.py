@@ -212,11 +212,11 @@ score = Score("Giant Steps", 200.0)
 pianoPart    = Part(PIANO, 0)
 
 themePhrase = Phrase(0.0)
-BEATS_PER_MEASURE = 4.0
 
 piano = Part(BRIGHT_ACOUSTIC, 0)  # Piano to MIDI channel 0
 
 #----CONFIG CONSTANTS---------------------
+BEATS_PER_MEASURE = 4.0
 NUM_REPEATS_OF_FORM = 4
 
 #================================================================================
@@ -235,19 +235,18 @@ Amin7 = Chord(A4, MINOR_SEVENTH, 0)
 FS7 = Chord(FS4, DOMINANT_SEVENTH, 0)
 CSmin7 = Chord(CS4, MINOR_SEVENTH, 0)
 Fmin7 = Chord(F4, MINOR_SEVENTH, 0)
-
+#--------FORM----------------------
 CHORD_LIST = [BMaj7, D7, GMaj7, Bb7, Ebmaj7, Amin7, D7, GMaj7, Bb7, Ebmaj7, FS7,
                   BMaj7, Fmin7, Bb7, Ebmaj7, Amin7, D7, GMaj7, CSmin7, FS7, BMaj7,
                   Fmin7, Bb7, Ebmaj7, CSmin7, FS7]
 RHYTHM_LIST = [HN, HN, HN, HN, WN, HN, HN, HN, HN, HN, HN, WN, HN, HN, WN, 
                    HN, HN, WN, HN, HN, WN, HN, HN, WN, HN, HN]
-#---------/CHORDS-------------------
 # TODO: Randomize these inversions instead of 0's
 #---------Comp the form------------
 for i in range(NUM_REPEATS_OF_FORM):
     for chord, rhythm in zip(CHORD_LIST, RHYTHM_LIST):
         pianoMelody1.addNoteList([chord.pitches], [rhythm])
-#---------/Comp the form------------------------------
+#----------------------------------
 
 
 # add parts to score
