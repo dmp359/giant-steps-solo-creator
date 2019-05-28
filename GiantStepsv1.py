@@ -234,7 +234,7 @@ viio_ = 8
 import random
 
 # Create the necessary musical data
-score = Score("Giant Steps", 130.0)
+score = Score("Giant Steps", 286.0)
 
 piano = Part(BRIGHT_ACOUSTIC, 0)  # Piano to MIDI channel 0
 sax = Part(TENOR_SAX, 1)  # Sax to MIDI channel 1
@@ -280,9 +280,8 @@ RHYTHM_LIST = [HN, HN, HN, HN, WN, HN, HN, HN, HN, HN, HN, WN, HN, HN, WN,
                    HN, HN, WN, HN, HN, WN, HN, HN, WN, HN, HN]
 # TODO: Randomize these inversions instead of 0's
 #---------Comp the form-----------------------------------
-for i in range(NUM_REPEATS_OF_FORM):
-    for chord, rhythm in zip(CHORD_LIST, RHYTHM_LIST):
-        pianoMelody1.addNoteList([chord.pitches], [rhythm])
+for chord, rhythm in zip(CHORD_LIST, RHYTHM_LIST):
+    pianoMelody1.addNoteList([chord.pitches], [rhythm])
 #---------------------------------------------------------
 
 '''
@@ -329,26 +328,24 @@ sax.addPhrase(soloMelody)
 # Taken from Coltrane's first chorus
 DOWN_BEAT_SCALE_DEGREES = [5, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
                            4, 5, 2, 1, 1, 1, 6, 1, 6, 3]
-for repeat in range(NUM_REPEATS_OF_FORM):
-    for i, chord in enumerate(CHORD_LIST):
-        current_down_beat = chord.pitches[0] + chord.scale[DOWN_BEAT_SCALE_DEGREES[i] - 1] # TODO: Octave displacement
-        if i >= len(CHORD_LIST) - 1:
-            break
-        next_chord = CHORD_LIST[i + 1]
-        next_down_beat = next_chord.pitches[0] + next_chord.scale[DOWN_BEAT_SCALE_DEGREES[i + 1] - 1]
-        num_filler_eight_notes = int((RHYTHM_LIST[i] / EN) - 1)
+for i, chord in enumerate(CHORD_LIST):
+    current_down_beat = chord.pitches[0] + chord.scale[DOWN_BEAT_SCALE_DEGREES[i] - 1] # TODO: Octave displacement
+    if i >= len(CHORD_LIST) - 1:
+        break
+    next_chord = CHORD_LIST[i + 1]
+    next_down_beat = next_chord.pitches[0] + next_chord.scale[DOWN_BEAT_SCALE_DEGREES[i + 1] - 1]
+    num_filler_eight_notes = int((RHYTHM_LIST[i] / EN) - 1)
+    
+    # Create a line to connect to next_down_beat
+    line = create_line(current_down_beat, next_down_beat, chord)
+    for note in line:
+        soloMelody.addNote(note, EN)
         
-        # Create a line to connect to next_down_beat
-        line = create_line(current_down_beat, next_down_beat, chord)
+    # Just repeat line if chord is entire bar. TODO: Improve
+    if num_filler_eight_notes > 3:
         for note in line:
             soloMelody.addNote(note, EN)
-            
-        # Hack. TODO: Improve measure-long lines
-        print(num_filler_eight_notes)
-        if num_filler_eight_notes > 3:
-            for note in line:
-                soloMelody.addNote(note, EN)
-            
+
 #=======================================
 # PLAY
 #=======================================
