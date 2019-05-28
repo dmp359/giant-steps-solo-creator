@@ -1,14 +1,18 @@
 #================================================================================
 # Intervals.py
-# Version 1.3
-# JL Popyack, May 2016, April 2019
+# Version 1.4
+# JL Popyack, May 2016, April 2019, May 2019
 # Revisions:
+# May 2019
+# - revised +/- operators to return deep copies
+# April 2019
 # - added ".semitones" to Chord class, added "return self" to Chord.invert
+# - corrected default inversion
 # - amended examples
 #================================================================================
 
-
 from music import *
+import copy
 
 #================================================================================
 # Define interval constants.
@@ -157,29 +161,49 @@ class Chord:
    # The list of pitches is sorted after adding or subtracting pitches
    #========================================================================
    def __add__(self, object):
+      root = self.root
+      semitones = copy.deepcopy(self.semitones)
+ 
+      temp = Chord(root,semitones)
       if type(object) is int:     # object is a pitch
-         self.pitches.append(object)
+         temp.pitches.append(object)
       elif type(object) is list:  # object is a list (hopefully a list of pitches)
-         self.pitches += object
+         temp.pitches += object
       else:                       # if object is a Chord, join the pitches
-         self.pitches += object.pitches  # otherwise, fail
-      self.pitches.sort()         # sort pitches in ascending order
-      self.semitones = map( lambda p: p-self.root, self.pitches )  # subtract root from each pitch
-      return self
+         temp.pitches += object.pitches  # otherwise, fail
+      temp.pitches.sort()         # sort pitches in ascending order
+      temp.semitones = map( lambda p: p-temp.root, temp.pitches )  # subtract root from each pitch
+      return temp
 
    def __radd__(self, object):
-      return self + object
+      root = self.root
+      semitones = copy.deepcopy(self.semitones)
+ 
+      temp = Chord(root,semitones)
+      if type(object) is int:     # object is a pitch
+         temp.pitches.append(object)
+      elif type(object) is list:  # object is a list (hopefully a list of pitches)
+         temp.pitches += object
+      else:                       # if object is a Chord, join the pitches
+         temp.pitches += object.pitches  # otherwise, fail
+      temp.pitches.sort()         # sort pitches in ascending order
+      temp.semitones = map( lambda p: p-temp.root, temp.pitches )  # subtract root from each pitch
+      return temp
 
    def __sub__(self, pitch):
+      root = self.root
+      semitones = copy.deepcopy(self.semitones)
+ 
+      temp = Chord(root,semitones)
       if type(pitch) is list:          # remove ALL occurrences of each pitch
          for p in pitch:               # in list, e.g., - [G4]
-            while p in self.pitches:
-               self.pitches.remove(p)
-      elif pitch in self.pitches:
-         self.pitches.remove(pitch)
-      self.pitches.sort()
-      self.semitones = map( lambda p: p-self.root, self.pitches )  # subtract root from each pitch
-      return self
+            while p in temp.pitches:
+               temp.pitches.remove(p)
+      elif pitch in temp.pitches:
+         temp.pitches.remove(pitch)
+      temp.pitches.sort()
+      temp.semitones = map( lambda p: p-temp.root, temp.pitches )  # subtract root from each pitch
+      return temp
 
    #========================================================================
    # Chord is printed with the names of the pitches, for example:
@@ -203,11 +227,14 @@ vi_   = 6
 vii_  = 7
 viio_ = 8
 
+
 # ------------------------------------------------------------------------------------------------------------------------------------------------------
 # GiantSteps.py
 # ------------------------------------------------------------------------------------------------------------------------------------------------------
+import random
+
 # Create the necessary musical data
-score = Score("Giant Steps", 260.0) 
+score = Score("Giant Steps", 130.0)
 
 piano = Part(BRIGHT_ACOUSTIC, 0)  # Piano to MIDI channel 0
 sax = Part(TENOR_SAX, 1)  # Sax to MIDI channel 1
@@ -258,27 +285,70 @@ for i in range(NUM_REPEATS_OF_FORM):
         pianoMelody1.addNoteList([chord.pitches], [rhythm])
 #---------------------------------------------------------
 
+'''
+Algorithm
 
+Given a starting pitch and an ending pitch, return a list of 4 pitches connecting
+the two in some sort of musical way within the chord. Does not include the ending pitch
+
+E.g F#5 Start. D5 end. 4 notes. Bmaj7 
+'''
+def create_line(start, end, jazz_chord):
+    line = []
+    NUM_PITCHES = 4
+    # TODO: Consider direction
+    # If line starts on the root, arpeggiate up a pentatonic scale. PENTATONIC_SCALE = [0, 2, 4, 7, 9]
+    if (start is jazz_chord.pitches[0]):
+        for i in range(NUM_PITCHES):
+            line.append(start + PENTATONIC_SCALE[i])
+        return line
+    
+    # If line starts on the 3rd, arpeggiate the 1st inversion
+    elif (start is jazz_chord.pitches[1]):
+        jazz_chord.invert(1)
+        return jazz_chord.pitches
+        
+    # If line starts on the 5th, arpeggiate the 2nd inversion
+    elif (start is jazz_chord.pitches[2]):
+        jazz_chord.invert(2)
+        return jazz_chord.pitches
+        
+    # If line starts on the 7th, arpeggiate the 3rd inversion
+    elif (start is jazz_chord.pitches[3]):
+        jazz_chord.invert(3)
+        return jazz_chord.pitches
+    
+    return jazz_chord.pitches
 #================================================================================
 # SOLOIST
 #================================================================================
 soloMelody = Phrase()
 sax.addPhrase(soloMelody)
-
+    
 # I.e. 5th above root of chord, root, root, 2nd above root, etc...
+# Taken from Coltrane's first chorus
 DOWN_BEAT_SCALE_DEGREES = [5, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
                            4, 5, 2, 1, 1, 1, 6, 1, 6, 3]
 for repeat in range(NUM_REPEATS_OF_FORM):
     for i, chord in enumerate(CHORD_LIST):
         current_down_beat = chord.pitches[0] + chord.scale[DOWN_BEAT_SCALE_DEGREES[i] - 1] # TODO: Octave displacement
-        soloMelody.addNote(current_down_beat, EN)
         if i >= len(CHORD_LIST) - 1:
             break
         next_chord = CHORD_LIST[i + 1]
         next_down_beat = next_chord.pitches[0] + next_chord.scale[DOWN_BEAT_SCALE_DEGREES[i + 1] - 1]
         num_filler_eight_notes = int((RHYTHM_LIST[i] / EN) - 1)
-        for n in range(num_filler_eight_notes):
-            soloMelody.addNote(REST, EN)
+        
+        # Create a line to connect to next_down_beat
+        line = create_line(current_down_beat, next_down_beat, chord)
+        for note in line:
+            soloMelody.addNote(note, EN)
+            
+        # Hack. TODO: Improve measure-long lines
+        print(num_filler_eight_notes)
+        if num_filler_eight_notes > 3:
+            for note in line:
+                soloMelody.addNote(note, EN)
+            
 #=======================================
 # PLAY
 #=======================================
