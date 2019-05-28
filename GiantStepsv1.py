@@ -218,6 +218,8 @@ NUM_REPEATS_OF_FORM = 4
 
 #---MUSICAL CONSTANTS-----------------------------
 # See https://jythonmusic.me/api/midi-constants/scale/
+
+# Inherit the Chord class and add a scale associated with each chord
 class JazzChord(Chord):
   def __init__(self,root,quality,inversion=0):
     Chord.__init__(self,root,quality,inversion=0)
@@ -266,15 +268,26 @@ sax.addPhrase(soloMelody)
 # I.e. 5th above root of chord, root, root, 2nd above root, etc...
 DOWN_BEAT_SCALE_DEGREES = [5, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
                            4, 5, 2, 1, 1, 1, 6, 1, 6, 3]
-for i in range(NUM_REPEATS_OF_FORM):
-    for chord, rhythm, degree in zip(CHORD_LIST, RHYTHM_LIST, DOWN_BEAT_SCALE_DEGREES):
-        soloMelody.addNoteList([chord.pitches[0] + chord.scale[degree - 1]], [rhythm])
+for repeat in range(NUM_REPEATS_OF_FORM):
+    for i, chord in enumerate(CHORD_LIST):
+        current_down_beat = chord.pitches[0] + chord.scale[DOWN_BEAT_SCALE_DEGREES[i] - 1] # TODO: Octave displacement
+        soloMelody.addNote(current_down_beat, EN)
+        if i >= len(CHORD_LIST) - 1:
+            break
+        next_chord = CHORD_LIST[i + 1]
+        next_down_beat = next_chord.pitches[0] + next_chord.scale[DOWN_BEAT_SCALE_DEGREES[i + 1] - 1]
+        num_filler_eight_notes = int((RHYTHM_LIST[i] / EN) - 1)
+        for n in range(num_filler_eight_notes):
+            soloMelody.addNote(REST, EN)
 #=======================================
 # PLAY
 #=======================================
-# add parts to score
+# Add parts to score
 score.addPart(piano)
 score.addPart(sax)
 
-# play score
+# View melody line
+View.notation(sax)	
+
+# Play score
 Play.midi(score)
