@@ -295,7 +295,7 @@ E.g F#5 Start. D5 end. 4 notes. Bmaj7
 def create_line(start, end, jazz_chord):
     line = []
     NUM_PITCHES = 4
-    # TODO: Consider direction
+
     # If line starts on the root, arpeggiate up a pentatonic scale. PENTATONIC_SCALE = [0, 2, 4, 7, 9]
     if (start is jazz_chord.pitches[0]):
         for i in range(NUM_PITCHES):
