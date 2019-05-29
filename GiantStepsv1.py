@@ -325,7 +325,9 @@ def create_line(start, end, jazz_chord):
 #================================================================================
 soloMelody = Phrase()
 sax.addPhrase(soloMelody)
-    
+soloLinePitches = []
+soloLineRhythms = []
+
 # I.e. 5th above root of chord, root, root, 2nd above root, etc...
 # Taken from Coltrane's first chorus
 DOWN_BEAT_SCALE_DEGREES = [5, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
@@ -349,13 +351,17 @@ for i, chord in enumerate(CHORD_LIST):
         line.reverse()
  
     for note in line:
-        soloMelody.addNote(note, EN)
+        soloLinePitches.append(note)
+        soloLineRhythms.append(EN)
         
     # Just repeat line if chord is entire bar. TODO: Improve
     if num_filler_eight_notes > 3:
         for note in line:
-            soloMelody.addNote(note, EN)
+            soloLinePitches.append(note)
+            soloLineRhythms.append(EN)
 
+# Add notes and rhythms to phrase
+soloMelody.addNoteList(soloLinePitches, soloLineRhythms)
 #=======================================
 # PLAY
 #=======================================
