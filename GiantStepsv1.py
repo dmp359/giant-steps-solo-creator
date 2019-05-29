@@ -339,7 +339,7 @@ DIRECTIONS = [0, 1, 0, 0, 1, 0, 1,
 
 # Basic first pass. Arpeggiate
 for i, chord in enumerate(CHORD_LIST):
-    current_down_beat = chord.pitches[0] + chord.scale[DOWN_BEAT_SCALE_DEGREES[i] - 1] # TODO: Octave displacement
+    current_down_beat = chord.pitches[0] + chord.scale[DOWN_BEAT_SCALE_DEGREES[i] - 1]
     if i >= len(CHORD_LIST) - 1:
         break
     next_chord = CHORD_LIST[i + 1]
