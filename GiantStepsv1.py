@@ -335,6 +335,9 @@ DOWN_BEAT_SCALE_DEGREES = [5, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
 
 DIRECTIONS = [0, 1, 0, 0, 1, 0, 1,
     1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]
+
+
+# Basic first pass. Arpeggiate
 for i, chord in enumerate(CHORD_LIST):
     current_down_beat = chord.pitches[0] + chord.scale[DOWN_BEAT_SCALE_DEGREES[i] - 1] # TODO: Octave displacement
     if i >= len(CHORD_LIST) - 1:
@@ -360,8 +363,32 @@ for i, chord in enumerate(CHORD_LIST):
             soloLinePitches.append(note)
             soloLineRhythms.append(EN)
 
+
+# Second pass. Smooth out octaves
+for i, pitch in enumerate(soloLinePitches):
+    if i >= len(soloLinePitches) - 1:
+        break
+    distance = pitch - soloLinePitches[i + 1]
+    
+    # Next pitch is below an octave away, so raise it up
+    if distance >= 12:
+        soloLinePitches[i + 1] += 12
+        soloLinePitches[i + 2] += 12
+        soloLinePitches[i + 3] += 12
+        soloLinePitches[i + 4] += 12
+
+    # Next pitch is above an octave up
+    if distance <= -12:
+        soloLinePitches[i + 1] -= 12
+        soloLinePitches[i + 2] -= 12
+        soloLinePitches[i + 3] -= 12
+        soloLinePitches[i + 4] -= 12
+
 # Add notes and rhythms to phrase
 soloMelody.addNoteList(soloLinePitches, soloLineRhythms)
+
+# Tie (common tone) pitches that are the same note
+Mod.tiePitches(soloMelody)
 #=======================================
 # PLAY
 #=======================================
