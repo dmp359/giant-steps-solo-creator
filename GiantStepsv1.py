@@ -418,7 +418,7 @@ score.addPart(piano)
 score.addPart(sax)
 
 # View melody line
-View.notation(sax)    
+View.notation(sax)
 
 # Play score
 Play.midi(score)
