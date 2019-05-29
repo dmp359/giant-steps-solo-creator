@@ -248,14 +248,17 @@ NUM_REPEATS_OF_FORM = 4
 
 # Inherit the Chord class and add a scale associated with each chord
 class JazzChord(Chord):
-  def __init__(self,root,quality,inversion=0):
-    Chord.__init__(self,root,quality,inversion=0)
-    if quality is MAJOR_SEVENTH:
-        self.scale = MAJOR_SCALE
-    elif quality is MINOR_SEVENTH:
-        self.scale = AEOLIAN_SCALE
-    elif quality is DOMINANT_SEVENTH:
-        self.scale = MIXOLYDIAN_SCALE
+    def __init__(self,root,quality,inversion=0):
+        Chord.__init__(self,root,quality,inversion=0)
+        if quality is MAJOR_SEVENTH:
+            self.scale = MAJOR_SCALE
+        elif quality is MINOR_SEVENTH:
+            self.scale = AEOLIAN_SCALE
+        elif quality is DOMINANT_SEVENTH:
+            self.scale = MIXOLYDIAN_SCALE
+            
+    def dropOctave(self):
+        self.pitches = map(lambda x: x - 12, self.pitches)
 #================================================================================
 # PIANO
 #================================================================================
@@ -290,36 +293,59 @@ Algorithm
 Given a starting pitch and an ending pitch, return a list of 4 pitches connecting
 the two in some sort of musical way within the chord. Does not include the ending pitch
 
+Direction of 0 means descend
+
 E.g F#5 Start. D5 end. 4 notes. Bmaj7 
 '''
-def create_line(start, end, jazz_chord):
-    line = []
+def create_line(start, end, jazz_chord, direction=1):
+    line = jazz_chord.pitches
     NUM_PITCHES = 4
 
-    # If line starts on the root, arpeggiate up a pentatonic scale. PENTATONIC_SCALE = [0, 2, 4, 7, 9]
+    # If line starts on the root, arpeggiate a pentatonic scale. PENTATONIC_SCALE = [0, 2, 4, 7, 9]
     if (start is jazz_chord.pitches[0]):
-        for i in range(NUM_PITCHES):
-            line.append(start + PENTATONIC_SCALE[i])
-        return line
-    
-    # If line starts on the 3rd, arpeggiate the 1st inversion
-    elif (start is jazz_chord.pitches[1]):
-        jazz_chord.invert(1)
-        return jazz_chord.pitches
+        line = []
+        pentatonic = JazzChord(start, PENTATONIC_SCALE[:NUM_PITCHES], 0)
+        if direction is 0:
+            pentatonic.invert(1)
+            pentatonic.dropOctave()
+            line = pentatonic.pitches
+            line.reverse()
+        else:
+            line = pentatonic.pitches
         
-    # If line starts on the 5th, arpeggiate the 2nd inversion
-    elif (start is jazz_chord.pitches[2]):
-        jazz_chord.invert(2)
-        return jazz_chord.pitches
+    # If line starts on the 3rd, arpeggiate the appropriate inversion
+    elif start is jazz_chord.pitches[1]:
+        if direction is 0:
+            jazz_chord.invert(2)
+            jazz_chord.dropOctave()
+            line = jazz_chord.pitches
+            line.reverse()
+        else:
+            jazz_chord.invert(1)
+            line = jazz_chord.pitches
         
-    # If line starts on the 7th, arpeggiate the 3rd inversion
-    elif (start is jazz_chord.pitches[3]):
-        jazz_chord.invert(3)
-        return jazz_chord.pitches
+    # If line starts on the 5th, arpeggiate the appropriate inversion
+    elif start is jazz_chord.pitches[2]:
+        if direction is 0:
+            jazz_chord.invert(3)
+            jazz_chord.dropOctave()
+            line = jazz_chord.pitches
+            line.reverse()
+        else:
+            jazz_chord.invert(2)
+            line = jazz_chord.pitches
+        
+    # If line starts on the 7th, arpeggiate the appropriate inversion
+    elif start is jazz_chord.pitches[3]:
+        if direction is 0:
+            line = jazz_chord.pitches
+        else:
+            jazz_chord.invert(3)
+            line = jazz_chord.pitches
    
-    # TODO: Remaining possibilities
+    # TODO: Remaining possibilities, i.e. 6th, 4th, etc.
     # Else, just return an arpeggiated chord for now
-    return jazz_chord.pitches
+    return line
 #================================================================================
 # SOLOIST
 #================================================================================
@@ -347,11 +373,7 @@ for i, chord in enumerate(CHORD_LIST):
     num_filler_eight_notes = int((RHYTHM_LIST[i] / EN) - 1)
     
     # Create a line to connect to next_down_beat
-    line = create_line(current_down_beat, next_down_beat, chord)
-    
-    # Determine its direction. Default from create_line() is ascending
-    if DIRECTIONS[i] is 0:
-        line.reverse()
+    line = create_line(current_down_beat, next_down_beat, chord, DIRECTIONS[i])
  
     for note in line:
         soloLinePitches.append(note)
@@ -362,7 +384,6 @@ for i, chord in enumerate(CHORD_LIST):
         for note in line:
             soloLinePitches.append(note)
             soloLineRhythms.append(EN)
-
 
 # Second pass. Smooth out octaves
 for i, pitch in enumerate(soloLinePitches):
@@ -397,7 +418,7 @@ score.addPart(piano)
 score.addPart(sax)
 
 # View melody line
-View.notation(sax)	
+View.notation(sax)
 
 # Play score
 Play.midi(score)
