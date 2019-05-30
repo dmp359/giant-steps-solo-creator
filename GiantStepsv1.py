@@ -227,7 +227,6 @@ vi_   = 6
 vii_  = 7
 viio_ = 8
 
-
 # ------------------------------------------------------------------------------------------------------------------------------------------------------
 # GiantSteps.py
 # ------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -238,6 +237,8 @@ score = Score("Giant Steps", 286.0)
 
 piano = Part(BRIGHT_ACOUSTIC, 0)  # Piano to MIDI channel 0
 sax = Part(TENOR_SAX, 1)  # Sax to MIDI channel 1
+LOWEST_NOTE = BF4
+HIGHEST_NOTE = C6
 
 #----CONFIG CONSTANTS---------------------
 BEATS_PER_MEASURE = 4.0
@@ -259,6 +260,9 @@ class JazzChord(Chord):
             
     def dropOctave(self):
         self.pitches = map(lambda x: x - 12, self.pitches)
+    def raiseOctave(self):
+        self.pitches = map(lambda x: x + 12, self.pitches)
+
 #================================================================================
 # PIANO
 #================================================================================
@@ -358,10 +362,31 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4):
         if num_notes > 4:
             line *= 2
     
-    # TODO: Remaining possibilities, i.e. 6th, 4th, etc.
+    # TODO: Remaining possibilities, i.e. 2nd 6th, 4th, etc.
+    # If line starts on the 4th
+    elif start is (jazz_chord.root + P4_):
+        line = []
+        for i in range(4): # Downward lick starting on the 4th
+            line.append(jazz_chord.root + P4_ - i)
+    elif start is (jazz_chord.root + M2_):
+        line = []
+        
+        # Descending. TODO: Ascending?
+        line.append(jazz_chord.root + M2_)
+        line.append(jazz_chord.root - M2_)
+        line.append(jazz_chord.root - m3_)
+        line.append(jazz_chord.root - P4_)
+
     else:
         if num_notes > 4:
             line *= 2
+            
+    if any(note < LOWEST_NOTE for note in line):
+        line = map(lambda x: x + 12, line)
+    
+    if any(note > HIGHEST_NOTE for note in line):
+        line = map(lambda x: x - 12, line)
+    
     return line
 #================================================================================
 # SOLOIST
@@ -378,7 +403,6 @@ DOWN_BEAT_SCALE_DEGREES = [5, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
 
 DIRECTIONS = [0, 1, 0, 0, 1, 0, 1,
     1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]
-
 
 # -----------Basic first pass. Arpeggiate-------------
 for i, chord in enumerate(CHORD_LIST):
