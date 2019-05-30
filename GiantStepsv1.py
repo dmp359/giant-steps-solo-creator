@@ -325,17 +325,28 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4):
         else:
             jazz_chord.invert(1)
             line = jazz_chord.pitches
-        
+        if num_notes > 4:
+            line *= 2
+
     # If line starts on the 5th, arpeggiate the appropriate inversion
     elif start is jazz_chord.pitches[2]:
-        if direction is 0:
-            jazz_chord.invert(3)
-            jazz_chord.dropOctave()
-            line = jazz_chord.pitches
-            line.reverse()
+        if num_notes > 4:
+            # Hardcoding a line like in bar 12. Ignoring direction.
+            line = []
+            for i in range(4):
+                line.append(jazz_chord.root + jazz_chord.scale[4 - i])
+            for i in range(3):
+                line.append(jazz_chord.root + jazz_chord.scale[i])
+            line.append(jazz_chord.root + jazz_chord.scale[4])
         else:
-            jazz_chord.invert(2)
-            line = jazz_chord.pitches
+            if direction is 0:
+                jazz_chord.invert(3)
+                jazz_chord.dropOctave()
+                line = jazz_chord.pitches
+                line.reverse()
+            else:
+                jazz_chord.invert(2)
+                line = jazz_chord.pitches
         
     # If line starts on the 7th, arpeggiate the appropriate inversion
     elif start is jazz_chord.pitches[3]:
@@ -344,9 +355,13 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4):
         else:
             jazz_chord.invert(3)
             line = jazz_chord.pitches
-   
+        if num_notes > 4:
+            line *= 2
+    
     # TODO: Remaining possibilities, i.e. 6th, 4th, etc.
-    # Else, just return an arpeggiated chord for now
+    else:
+        if num_notes > 4:
+            line *= 2
     return line
 #================================================================================
 # SOLOIST
@@ -373,7 +388,7 @@ for i, chord in enumerate(CHORD_LIST):
     next_chord = CHORD_LIST[i + 1]
     next_down_beat = next_chord.pitches[0] + next_chord.scale[DOWN_BEAT_SCALE_DEGREES[i + 1] - 1]
     num_filler_eight_notes = int((RHYTHM_LIST[i] / EN) - 1)
-    
+
     # Create a line to connect to next_down_beat
     line = create_line(current_down_beat, next_down_beat, chord, DIRECTIONS[i], num_filler_eight_notes + 1)
     assert (num_filler_eight_notes + 1) % len(line) is 0, 'Length of line is not 4 or 8. It is {}'.format(len(line))
