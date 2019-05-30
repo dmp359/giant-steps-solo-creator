@@ -347,7 +347,6 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4):
    
     # TODO: Remaining possibilities, i.e. 6th, 4th, etc.
     # Else, just return an arpeggiated chord for now
-    print(line)
     return line
 #================================================================================
 # SOLOIST
@@ -366,7 +365,7 @@ DIRECTIONS = [0, 1, 0, 0, 1, 0, 1,
     1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]
 
 
-# Basic first pass. Arpeggiate
+# -----------Basic first pass. Arpeggiate-------------
 for i, chord in enumerate(CHORD_LIST):
     current_down_beat = chord.pitches[0] + chord.scale[DOWN_BEAT_SCALE_DEGREES[i] - 1]
     if i >= len(CHORD_LIST) - 1:
@@ -376,19 +375,15 @@ for i, chord in enumerate(CHORD_LIST):
     num_filler_eight_notes = int((RHYTHM_LIST[i] / EN) - 1)
     
     # Create a line to connect to next_down_beat
-    line = create_line(current_down_beat, next_down_beat, chord, DIRECTIONS[i], num_filler_eight_notes)
- 
+    line = create_line(current_down_beat, next_down_beat, chord, DIRECTIONS[i], num_filler_eight_notes + 1)
+    assert (num_filler_eight_notes + 1) % len(line) is 0, 'Length of line is not 4 or 8. It is {}'.format(len(line))
+
+    # Add this line to list
     for note in line:
         soloLinePitches.append(note)
         soloLineRhythms.append(EN)
-        
-    # Just repeat line if chord is entire bar. TODO: Improve
-    # if num_filler_eight_notes > 3:
-    #     for note in line:
-    #         soloLinePitches.append(note)
-    #         soloLineRhythms.append(EN)
 
-# Second pass. Smooth out octaves
+# -----------Second pass. Smooth out octaves-------------
 for i, pitch in enumerate(soloLinePitches):
     if i >= len(soloLinePitches) - 1:
         break
@@ -408,6 +403,7 @@ for i, pitch in enumerate(soloLinePitches):
         soloLinePitches[i + 3] -= 12
         soloLinePitches[i + 4] -= 12
 
+# ---------Complete solo------------------------
 # Add notes and rhythms to phrase
 soloMelody.addNoteList(soloLinePitches, soloLineRhythms)
 
@@ -420,7 +416,7 @@ Mod.tiePitches(soloMelody)
 score.addPart(piano)
 score.addPart(sax)
 
-# View melody line
+# View melody line. More options: https://jythonmusic.me/api/music-library-functions/view-functions/
 View.notation(sax)
 
 # Play score
