@@ -242,7 +242,7 @@ sax = Part(TENOR_SAX, 1)  # Sax to MIDI channel 1
 #----CONFIG CONSTANTS---------------------
 BEATS_PER_MEASURE = 4.0
 NUM_REPEATS_OF_FORM = 4
-
+PENTATONIC_MAJOR_ASCENDING_LINE = [0, 2, 4, 5, 7, 9, 11, 14]
 #---MUSICAL CONSTANTS-----------------------------
 # See https://jythonmusic.me/api/midi-constants/scale/
 
@@ -297,14 +297,16 @@ Direction of 0 means descend
 
 E.g F#5 Start. D5 end. 4 notes. Bmaj7 
 '''
-def create_line(start, end, jazz_chord, direction=1):
+def create_line(start, end, jazz_chord, direction=1, num_notes=4):
     line = jazz_chord.pitches
-    NUM_PITCHES = 4
 
-    # If line starts on the root, arpeggiate a pentatonic scale. PENTATONIC_SCALE = [0, 2, 4, 7, 9]
-    if (start is jazz_chord.pitches[0]):
+    # If line starts on the root, arpeggiate a pentatonic scale lick. PENTATONIC_SCALE = [0, 2, 4, 7, 9]
+    if start is jazz_chord.pitches[0]:
         line = []
-        pentatonic = JazzChord(start, PENTATONIC_SCALE[:NUM_PITCHES], 0)
+        if num_notes < 5:
+            pentatonic = JazzChord(start, PENTATONIC_SCALE[:num_notes], 0)
+        else:
+            pentatonic = JazzChord(start, PENTATONIC_MAJOR_ASCENDING_LINE[:num_notes], 0)
         if direction is 0:
             pentatonic.invert(1)
             pentatonic.dropOctave()
@@ -345,6 +347,7 @@ def create_line(start, end, jazz_chord, direction=1):
    
     # TODO: Remaining possibilities, i.e. 6th, 4th, etc.
     # Else, just return an arpeggiated chord for now
+    print(line)
     return line
 #================================================================================
 # SOLOIST
@@ -373,17 +376,17 @@ for i, chord in enumerate(CHORD_LIST):
     num_filler_eight_notes = int((RHYTHM_LIST[i] / EN) - 1)
     
     # Create a line to connect to next_down_beat
-    line = create_line(current_down_beat, next_down_beat, chord, DIRECTIONS[i])
+    line = create_line(current_down_beat, next_down_beat, chord, DIRECTIONS[i], num_filler_eight_notes)
  
     for note in line:
         soloLinePitches.append(note)
         soloLineRhythms.append(EN)
         
     # Just repeat line if chord is entire bar. TODO: Improve
-    if num_filler_eight_notes > 3:
-        for note in line:
-            soloLinePitches.append(note)
-            soloLineRhythms.append(EN)
+    # if num_filler_eight_notes > 3:
+    #     for note in line:
+    #         soloLinePitches.append(note)
+    #         soloLineRhythms.append(EN)
 
 # Second pass. Smooth out octaves
 for i, pitch in enumerate(soloLinePitches):
