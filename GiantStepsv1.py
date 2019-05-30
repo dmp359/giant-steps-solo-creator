@@ -362,21 +362,31 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4):
         if num_notes > 4:
             line *= 2
     
-    # TODO: Remaining possibilities, i.e. 2nd 6th, 4th, etc.
     # If line starts on the 4th
     elif start is (jazz_chord.root + P4_):
         line = []
-        for i in range(4): # Downward lick starting on the 4th
+        for i in range(4): # Downward chromatic lick starting on the 4th
             line.append(jazz_chord.root + P4_ - i)
+            
+    # If line starts on the 2nd
     elif start is (jazz_chord.root + M2_):
         line = []
         
-        # Descending. TODO: Ascending?
+        # Descending
         line.append(jazz_chord.root + M2_)
         line.append(jazz_chord.root - M2_)
         line.append(jazz_chord.root - m3_)
         line.append(jazz_chord.root - P4_)
-
+    
+    # If line starts on the 6th
+    elif start is (jazz_chord.root + M6_):
+        line = []
+        
+        # Descending
+        line.append(jazz_chord.root + M6_)
+        line.append(jazz_chord.root + P5_)
+        line.append(jazz_chord.root + M3_)
+        line.append(jazz_chord.root)
     else:
         if num_notes > 4:
             line *= 2
@@ -441,6 +451,12 @@ for i, pitch in enumerate(soloLinePitches):
         soloLinePitches[i + 2] -= 12
         soloLinePitches[i + 3] -= 12
         soloLinePitches[i + 4] -= 12
+        
+# -----------Third pass. Add rests-------------
+for i, pitch in enumerate(soloLinePitches):
+    if i >= len(soloLinePitches) - 1:
+        break
+    ## TODO --------------------------        
 
 # ---------Complete solo------------------------
 # Add notes and rhythms to phrase
