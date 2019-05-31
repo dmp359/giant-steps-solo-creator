@@ -243,7 +243,10 @@ HIGHEST_NOTE = C6
 #----CONFIG CONSTANTS---------------------
 BEATS_PER_MEASURE = 4.0
 NUM_REPEATS_OF_FORM = 4
+MINOR_PENTATONIC_SCALE = [0, 2, 3, 7, 9]
 PENTATONIC_MAJOR_ASCENDING_LINE = [0, 2, 4, 5, 7, 9, 11, 14]
+PENTATONIC_MINOR_ASCENDING_LINE = [0, 2, 3, 5, 7, 9, 11, 14]
+
 #---MUSICAL CONSTANTS-----------------------------
 # See https://jythonmusic.me/api/midi-constants/scale/
 
@@ -251,6 +254,7 @@ PENTATONIC_MAJOR_ASCENDING_LINE = [0, 2, 4, 5, 7, 9, 11, 14]
 class JazzChord(Chord):
     def __init__(self,root,quality,inversion=0):
         Chord.__init__(self,root,quality,inversion=0)
+        assert(not any(note < 0 for note in self.pitches))
         if quality is MAJOR_SEVENTH:
             self.scale = MAJOR_SCALE
         elif quality is MINOR_SEVENTH:
@@ -328,19 +332,28 @@ Direction of 0 means descend
 
 E.g F#5 Start. D5 end. 4 notes. Bmaj7 
 '''
-def create_line(start, end, jazz_chord, direction=1, num_notes=4):
-    if start is REST: # Return a silent line
+def create_line(start, end, jazz_chord, direction=1, num_notes=4, sp=0):
+    if start < 0 or start is REST: # Return a silent line
         return [REST] * num_notes
 
     line = jazz_chord.pitches
-
-    # If line starts on the root, arpeggiate a pentatonic scale lick. PENTATONIC_SCALE = [0, 2, 4, 7, 9]
-    if start is jazz_chord.pitches[0]:
+    print 'num notes = ' + str(num_notes)
+    assert(not any(note < 0 for note in line), 'num_notes {} at chord {}'.format(num_notes, chord.pitches))
+    
+    # If line starts on the root, arpeggiate a pentatonic scale lick. (Major) PENTATONIC_SCALE = [0, 2, 4, 7, 9]
+    if sp is 1:
         line = []
         if num_notes < 5:
-            pentatonic = JazzChord(start, PENTATONIC_SCALE[:num_notes], 0)
+            if jazz_chord.scale is MAJOR_SCALE or jazz_chord.scale is MIXOLYDIAN_SCALE:
+                pentatonic = JazzChord(start, PENTATONIC_SCALE[:num_notes], 0)
+            else:
+                pentatonic = JazzChord(start, MINOR_PENTATONIC_SCALE[:num_notes], 0)
         else:
-            pentatonic = JazzChord(start, PENTATONIC_MAJOR_ASCENDING_LINE[:num_notes], 0)
+            if jazz_chord.scale is MAJOR_SCALE or jazz_chord.scale is MIXOLYDIAN_SCALE:
+                pentatonic = JazzChord(start, PENTATONIC_MAJOR_ASCENDING_LINE[:num_notes], 0)
+            else:
+                pentatonic = JazzChord(start, PENTATONIC_MINOR_ASCENDING_LINE[:num_notes], 0)
+
         if direction is 0:
             pentatonic.invert(1)
             pentatonic.dropOctave()
@@ -350,7 +363,7 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4):
             line = pentatonic.pitches
         
     # If line starts on the 3rd, arpeggiate the appropriate inversion
-    elif start is jazz_chord.pitches[1]:
+    elif sp is 3:
         if direction is 0:
             jazz_chord.invert(2)
             jazz_chord.dropOctave()
@@ -359,19 +372,19 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4):
         else:
             jazz_chord.invert(1)
             line = jazz_chord.pitches
-        if num_notes is 8:
-            line *= 2
+        # if num_notes is 8:
+        #     line *= 2
 
     # If line starts on the 5th, arpeggiate the appropriate inversion
-    elif start is jazz_chord.pitches[2]:
+    elif sp is 5:
         line = []
-        if num_notes > 4:
+        if num_notes is 8:
             # Hardcoding a line like in bar 12. Ignoring direction.
             for i in range(4):
-                line.append(jazz_chord.root + jazz_chord.scale[4 - i])
+                line.append(jazz_chord.pitches[0] + jazz_chord.scale[4 - i])
             for i in range(3):
-                line.append(jazz_chord.root + jazz_chord.scale[i])
-            line.append(jazz_chord.root + jazz_chord.scale[4])
+                line.append(jazz_chord.pitches[0] + jazz_chord.scale[i])
+            line.append(jazz_chord.pitches[0] + jazz_chord.scale[4])
         else:
             if direction is 0:
                 jazz_chord.invert(3)
@@ -383,47 +396,46 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4):
                 line = jazz_chord.pitches
         
     # If line starts on the 7th, arpeggiate the appropriate inversion
-    elif start is jazz_chord.pitches[3]:
+    elif sp is 7:
         if direction is 0:
             line = jazz_chord.pitches
         else:
             jazz_chord.invert(3)
             line = jazz_chord.pitches
-        if num_notes is 8:
-            line *= 2
+        # if num_notes is 8:
+        #     line *= 2
     
-    # If line starts on the 4th
-    elif start is (jazz_chord.root + jazz_chord.scale[3]):
+    # If line starts on the 4th. TODO: Improve. I'm not in love with this
+    elif sp is 4:
         line = []
         for i in range(4): # Downward chromatic lick starting on the 4th
-            line.append(jazz_chord.root + P4_ - i)
+            line.append(jazz_chord.pitches[0] + P4_ - i)
             
     # If line starts on the 2nd
-    elif start is (jazz_chord.root + jazz_chord.scale[1]):
+    elif sp is 2:
         line = []
         
         # Descending
-        line.append(jazz_chord.root + M2_)
-        line.append(jazz_chord.root - M2_)
-        line.append(jazz_chord.root - m3_)
-        line.append(jazz_chord.root - P4_)
+        line.append(jazz_chord.pitches[0] + jazz_chord.scale[1])
+        line.append(jazz_chord.pitches[0] + jazz_chord.scale[6] - 12)
+        line.append(jazz_chord.pitches[0] + jazz_chord.scale[5] - 12)
+        line.append(jazz_chord.pitches[0] + jazz_chord.scale[4] - 12)
     
     # If line starts on the 6th
-    elif start is (jazz_chord.root + jazz_chord.scale[5]):
+    elif sp is 6:
         line = []
         
         # Descending
-        line.append(jazz_chord.root + M6_)
-        line.append(jazz_chord.root + P5_)
-        line.append(jazz_chord.root + M3_)
-        line.append(jazz_chord.root)
+        line.append(jazz_chord.pitches[0] + jazz_chord.scale[5] - 12)
+        line.append(jazz_chord.pitches[0] + jazz_chord.scale[4] - 12)
+        line.append(jazz_chord.pitches[0] + jazz_chord.scale[2] - 12)
+        line.append(jazz_chord.pitches[0])
     else:
-        if num_notes > 4:
-            line *= 2
+        assert(False)
     
     if num_notes > 4 and len(line) is 4:
         for i in range(4):
-            line.append(REST)
+            line.append(REST) # !WARNING: THIS ALSO APPENDS TO THE CHORD!
 
     if any(note < LOWEST_NOTE for note in line):
         line = map(lambda x: x + 12, line)
@@ -442,38 +454,45 @@ soloLineRhythms = []
 
 # I.e. 5th above root of chord, root, root, 2nd above root, etc...
 # Taken from Coltrane's first and sixth chorus
-DOWN_BEAT_SCALE_DEGREES = [5, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
+DOWN_BEAT_SCALE_DEGREES = [1, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
                            4, 5, 2, 1, 1, 1, 6, 1, 6, 3,
                            
-                           6, 1, 1, 2, 5, 2, 0, 5, 3, 1, 7, 7, 1, 1, 1,
-                           0, 3, 3, 1, 3, 2, 6, 1, 1, 2, 3,
+                           6, 1, 1, 2, 5, 2, 1, 5, 3, 1, 7, 7, 1, 1, 1, 1,
+                           3, 3, 1, 3, 2, 6, 1, 1, 2, 3,
                            
                            5, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
                            4, 5, 2, 1, 1, 1, 6, 1, 6, 3]
 
-DIRECTIONS = [0, 1, 0, 0, 1, 0, 1,
+DOWN_BEAT_SCALE_DEGREES = [1] * 26 * 3
+DIRECTIONS = [1, 1, 0, 0, 1, 0, 1,
     1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]
 DIRECTIONS *= 3
 
 # -----------Basic first pass. Arpeggiate-------------
 for i, chord in enumerate(CHORD_LIST):
+    assert(not any(note < 0 for note in chord.pitches), 'index {} at chord {}'.format(i, chord.pitches))
+
     starting_pitch = DOWN_BEAT_SCALE_DEGREES[i]
+    print('{} | {}'.format(i, starting_pitch))
     current_down_beat = REST # Later will be handleed in create_line
+
     if starting_pitch > 0:
         current_down_beat = chord.pitches[0] + chord.scale[starting_pitch - 1]
     
     # if i >= len(CHORD_LIST) - 1:
-        # break
+    #     break
 
-    # # next_chord = CHORD_LIST[i + 1]
+    # next_chord = CHORD_LIST[i + 1]
     # next_scale_degree = DOWN_BEAT_SCALE_DEGREES[i + 1]
     next_down_beat = 0
     # if next_scale_degree > 0:
-    #     next_down_beat = next_chord.pitches[0] + next_chord.scale[next_scale_degree - 1]
+        # next_down_beat = next_chord.pitches[0] + next_chord.scale[next_scale_degree - 1]
 
     line_length = int(RHYTHM_LIST[i] / EN)
+    
     # Create a line to connect to next_down_beat
-    line = create_line(current_down_beat, next_down_beat, chord, DIRECTIONS[i], line_length)
+    assert(not any(note < 0 for note in chord.pitches), 'index {} at chord {}'.format(i, chord.pitches))
+    line = create_line(current_down_beat, next_down_beat, chord, DIRECTIONS[i], line_length,starting_pitch)
     assert (line_length % len(line) is 0, 'Length of line is not 4 or 8. The line is {} expecting at index {}'.format(line, line_length))
 
     # Add this line to list
@@ -483,7 +502,7 @@ for i, chord in enumerate(CHORD_LIST):
 
 # -----------Second pass. Smooth out octaves-------------
 for i, pitch in enumerate(soloLinePitches):
-    if i >= len(soloLinePitches) - 1:
+    if i >= len(soloLinePitches) - 3:
         break
     
     if pitch < 0:
