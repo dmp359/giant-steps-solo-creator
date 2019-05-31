@@ -371,7 +371,6 @@ CHORD_LIST = [
 RHYTHM_LIST = [HN, HN, HN, HN, WN, HN, HN, HN, HN, HN, HN, WN, HN, HN, WN, 
                    HN, HN, WN, HN, HN, WN, HN, HN, WN, HN, HN]
 RHYTHM_LIST *= NUM_CHORUSES
-# TODO: Randomize these inversions instead of 0's
 #---------Comp the form-----------------------------------
 for chord, rhythm in zip(CHORD_LIST, RHYTHM_LIST):
     pianoMelody1.addNoteList([chord.pitches], [rhythm])
@@ -426,8 +425,6 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4, sp=0):
         else:
             jazz_chord.invert(1)
             line = jazz_chord.pitches
-        # if num_notes is 8:
-        #     line *= 2
 
     # If line starts on the 5th, arpeggiate the appropriate inversion
     elif sp is 5:
@@ -456,8 +453,6 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4, sp=0):
         else:
             jazz_chord.invert(3)
             line = jazz_chord.pitches
-        # if num_notes is 8:
-        #     line *= 2
     
     # If line starts on the 4th. TODO: Improve. I'm not in love with this
     elif sp is 4:
@@ -511,16 +506,14 @@ soloLineRhythms = []
 DOWN_BEAT_SCALE_DEGREES = [1, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
                            4, 5, 2, 1, 1, 1, 6, 1, 6, 3,
                            
-                           6, 1, 1, 2, 5, 2, 1, 5, 3, 1, 7, 7, 1, 1, 1, 1,
-                           3, 3, 1, 3, 2, 6, 1, 1, 2, 3,
+                           6, 1, 1, 2, 5, 2, 1, 5, 3, 0, 7, 7, 1, 0, 1, 1,
+                           3, 3, 1, 3, 2, 6, 0, 1, 2, 3,
                            
                            5, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
                            4, 5, 2, 1, 1, 1, 6, 1, 6, 3]
 
-DOWN_BEAT_SCALE_DEGREES = [3] * 26 * NUM_CHORUSES
-# DIRECTIONS = [1, 1, 0, 0, 1, 0, 1,
-#     1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]
-DIRECTIONS = [1] * 26 * NUM_CHORUSES
+DIRECTIONS = [1, 1, 0, 0, 1, 0, 1,
+    1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]
 DIRECTIONS *= NUM_CHORUSES
 
 # -----------Basic first pass. Arpeggiate-------------
@@ -529,7 +522,7 @@ for i, chord in enumerate(CHORD_LIST):
 
     starting_pitch = DOWN_BEAT_SCALE_DEGREES[i]
     print('{} | {}'.format(i, starting_pitch))
-    current_down_beat = REST # Later will be handleed in create_line
+    current_down_beat = REST # Later will be handled in create_line
 
     if starting_pitch > 0:
         current_down_beat = chord.pitches[0] + chord.scale[starting_pitch - 1]
@@ -564,7 +557,7 @@ for i, pitch in enumerate(soloLinePitches):
     distance = pitch - soloLinePitches[i + 1]
     
     # Next pitch is below an octave away, so raise it up
-    next_four = soloLinePitches[i + 1: i+ 4] # TODO. Fix
+    # next_four = soloLinePitches[i + 1: i+ 4] # TODO. Fix octaves
     if distance >= 12:
         soloLinePitches[i + 1] += 12
         soloLinePitches[i + 2] += 12
