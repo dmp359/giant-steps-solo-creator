@@ -385,6 +385,8 @@ the two in some sort of musical way within the chord. Does not include the endin
 Direction of 0 means descend
 
 E.g F#5 Start. D5 end. 4 notes. Bmaj7 
+
+sp is starting pitch, or starting scale degree
 '''
 def create_line(start, end, jazz_chord, direction=1, num_notes=4, sp=0):
     if start < 0 or start is REST: # Return a silent line
@@ -482,7 +484,6 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4, sp=0):
     else:
         assert(False)
     
-    print('adding rests')
     for i in range(num_notes - len(line)):
         line.append(REST) # !WARNING: THIS ALSO APPENDS TO THE CHORD if one is used!
 
@@ -521,7 +522,6 @@ for i, chord in enumerate(CHORD_LIST):
     assert(not any(note < 0 for note in chord.pitches), 'index {} at chord {}'.format(i, chord.pitches))
 
     starting_pitch = DOWN_BEAT_SCALE_DEGREES[i]
-    print('{} | {}'.format(i, starting_pitch))
     current_down_beat = REST # Later will be handled in create_line
 
     if starting_pitch > 0:
