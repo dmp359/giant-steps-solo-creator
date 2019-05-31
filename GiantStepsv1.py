@@ -387,9 +387,6 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4):
         line.append(jazz_chord.root + P5_)
         line.append(jazz_chord.root + M3_)
         line.append(jazz_chord.root)
-    else:
-        if num_notes > 4:
-            line *= 2
             
     if any(note < LOWEST_NOTE for note in line):
         line = map(lambda x: x + 12, line)
@@ -397,6 +394,9 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4):
     if any(note > HIGHEST_NOTE for note in line):
         line = map(lambda x: x - 12, line)
     
+    if num_notes > 4 and len(line) < 8:
+        for i in range(4):
+            line.append(REST)
     return line
 #================================================================================
 # SOLOIST
@@ -436,6 +436,10 @@ for i, chord in enumerate(CHORD_LIST):
 for i, pitch in enumerate(soloLinePitches):
     if i >= len(soloLinePitches) - 1:
         break
+    
+    if pitch < 0:
+        continue
+    
     distance = pitch - soloLinePitches[i + 1]
     
     # Next pitch is below an octave away, so raise it up
@@ -452,13 +456,19 @@ for i, pitch in enumerate(soloLinePitches):
         soloLinePitches[i + 3] -= 12
         soloLinePitches[i + 4] -= 12
         
-# -----------Third pass. Add rests-------------
+# -----------Third pass. Add rests---------------
 for i, pitch in enumerate(soloLinePitches):
     if i >= len(soloLinePitches) - 1:
         break
     ## TODO --------------------------        
 
 # ---------Complete solo------------------------
+# For some reason, Jython needs me to redefine the RESTs as RESTs right here or else it
+# Throws an error. No idea why but this fixes it...
+for i, pitch in enumerate(soloLinePitches):
+    if pitch < 0:
+        soloLinePitches[i] = REST
+        
 # Add notes and rhythms to phrase
 soloMelody.addNoteList(soloLinePitches, soloLineRhythms)
 
