@@ -272,7 +272,7 @@ class JazzChord(Chord):
 #================================================================================
 pianoMelody1 = Phrase()
 piano.addPhrase(pianoMelody1)
-
+NUM_CHORUSES = 3
 #---------CHORDS-------------------
 # BMaj7 = JazzChord(B4, MAJOR_SEVENTH, 0)
 # D7 = JazzChord(D4, DOMINANT_SEVENTH, 0)
@@ -284,6 +284,8 @@ piano.addPhrase(pianoMelody1)
 # CSmin7 = JazzChord(CS4, MINOR_SEVENTH, 0)
 # Fmin7 = JazzChord(F4, MINOR_SEVENTH, 0)
 #--------FORM----------------------
+
+# !WARNING! These must be setup like this due to how invert() works
 CHORD_LIST = [
     JazzChord(B4, MAJOR_SEVENTH, 0),
     JazzChord(D4, DOMINANT_SEVENTH, 0),
@@ -311,11 +313,64 @@ CHORD_LIST = [
     JazzChord(EF4, MAJOR_SEVENTH, 0),
     JazzChord(CS4, MINOR_SEVENTH, 0),
     JazzChord(FS4, DOMINANT_SEVENTH, 0),
+    
+    JazzChord(B4, MAJOR_SEVENTH, 0),
+    JazzChord(D4, DOMINANT_SEVENTH, 0),
+    JazzChord(G4, MAJOR_SEVENTH, 0),
+    JazzChord(BF4, DOMINANT_SEVENTH, 0),
+    JazzChord(EF4, MAJOR_SEVENTH, 0),
+    JazzChord(A4, MINOR_SEVENTH, 0),
+    JazzChord(D4, DOMINANT_SEVENTH, 0),
+    JazzChord(G4, MAJOR_SEVENTH, 0),
+    JazzChord(BF4, DOMINANT_SEVENTH, 0),
+    JazzChord(EF4, MAJOR_SEVENTH, 0),
+    JazzChord(FS4, DOMINANT_SEVENTH, 0),
+    JazzChord(B4, MAJOR_SEVENTH, 0),
+    JazzChord(F4, MINOR_SEVENTH, 0),
+    JazzChord(BF4, DOMINANT_SEVENTH, 0),
+    JazzChord(EF4, MAJOR_SEVENTH, 0),
+    JazzChord(A4, MINOR_SEVENTH, 0),
+    JazzChord(D4, DOMINANT_SEVENTH, 0),
+    JazzChord(G4, MAJOR_SEVENTH, 0),
+    JazzChord(CS4, MINOR_SEVENTH, 0),
+    JazzChord(FS4, DOMINANT_SEVENTH, 0),
+    JazzChord(B4, MAJOR_SEVENTH, 0),
+    JazzChord(F4, MINOR_SEVENTH, 0),
+    JazzChord(BF4, DOMINANT_SEVENTH, 0),
+    JazzChord(EF4, MAJOR_SEVENTH, 0),
+    JazzChord(CS4, MINOR_SEVENTH, 0),
+    JazzChord(FS4, DOMINANT_SEVENTH, 0),
+    
+    JazzChord(B4, MAJOR_SEVENTH, 0),
+    JazzChord(D4, DOMINANT_SEVENTH, 0),
+    JazzChord(G4, MAJOR_SEVENTH, 0),
+    JazzChord(BF4, DOMINANT_SEVENTH, 0),
+    JazzChord(EF4, MAJOR_SEVENTH, 0),
+    JazzChord(A4, MINOR_SEVENTH, 0),
+    JazzChord(D4, DOMINANT_SEVENTH, 0),
+    JazzChord(G4, MAJOR_SEVENTH, 0),
+    JazzChord(BF4, DOMINANT_SEVENTH, 0),
+    JazzChord(EF4, MAJOR_SEVENTH, 0),
+    JazzChord(FS4, DOMINANT_SEVENTH, 0),
+    JazzChord(B4, MAJOR_SEVENTH, 0),
+    JazzChord(F4, MINOR_SEVENTH, 0),
+    JazzChord(BF4, DOMINANT_SEVENTH, 0),
+    JazzChord(EF4, MAJOR_SEVENTH, 0),
+    JazzChord(A4, MINOR_SEVENTH, 0),
+    JazzChord(D4, DOMINANT_SEVENTH, 0),
+    JazzChord(G4, MAJOR_SEVENTH, 0),
+    JazzChord(CS4, MINOR_SEVENTH, 0),
+    JazzChord(FS4, DOMINANT_SEVENTH, 0),
+    JazzChord(B4, MAJOR_SEVENTH, 0),
+    JazzChord(F4, MINOR_SEVENTH, 0),
+    JazzChord(BF4, DOMINANT_SEVENTH, 0),
+    JazzChord(EF4, MAJOR_SEVENTH, 0),
+    JazzChord(CS4, MINOR_SEVENTH, 0),
+    JazzChord(FS4, DOMINANT_SEVENTH, 0),
 ]
-CHORD_LIST *= 3
 RHYTHM_LIST = [HN, HN, HN, HN, WN, HN, HN, HN, HN, HN, HN, WN, HN, HN, WN, 
                    HN, HN, WN, HN, HN, WN, HN, HN, WN, HN, HN]
-RHYTHM_LIST *= 3
+RHYTHM_LIST *= NUM_CHORUSES
 # TODO: Randomize these inversions instead of 0's
 #---------Comp the form-----------------------------------
 for chord, rhythm in zip(CHORD_LIST, RHYTHM_LIST):
@@ -414,7 +469,7 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4, sp=0):
     elif sp is 2:
         line = []
         
-        # Descending
+        # Descending line
         line.append(jazz_chord.pitches[0] + jazz_chord.scale[1])
         line.append(jazz_chord.pitches[0] + jazz_chord.scale[6] - 12)
         line.append(jazz_chord.pitches[0] + jazz_chord.scale[5] - 12)
@@ -432,10 +487,9 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4, sp=0):
     else:
         assert(False)
     
-    if len(line) < num_notes:
-        print('adding rests')
-        for i in range(num_notes - len(line)):
-            line.append(REST) # !WARNING: THIS ALSO APPENDS TO THE CHORD!
+    print('adding rests')
+    for i in range(num_notes - len(line)):
+        line.append(REST) # !WARNING: THIS ALSO APPENDS TO THE CHORD if one is used!
 
     if any(note < LOWEST_NOTE for note in line):
         line = map(lambda x: x + 12, line)
@@ -463,11 +517,11 @@ DOWN_BEAT_SCALE_DEGREES = [1, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
                            5, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
                            4, 5, 2, 1, 1, 1, 6, 1, 6, 3]
 
-DOWN_BEAT_SCALE_DEGREES = [2] * 26 * 3
+DOWN_BEAT_SCALE_DEGREES = [3] * 26 * NUM_CHORUSES
 # DIRECTIONS = [1, 1, 0, 0, 1, 0, 1,
 #     1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]
-DIRECTIONS = [1] * 26 * 3
-DIRECTIONS *= 3
+DIRECTIONS = [1] * 26 * NUM_CHORUSES
+DIRECTIONS *= NUM_CHORUSES
 
 # -----------Basic first pass. Arpeggiate-------------
 for i, chord in enumerate(CHORD_LIST):
@@ -480,14 +534,12 @@ for i, chord in enumerate(CHORD_LIST):
     if starting_pitch > 0:
         current_down_beat = chord.pitches[0] + chord.scale[starting_pitch - 1]
     
-    # if i >= len(CHORD_LIST) - 1:
-    #     break
-
-    # next_chord = CHORD_LIST[i + 1]
-    # next_scale_degree = DOWN_BEAT_SCALE_DEGREES[i + 1]
     next_down_beat = 0
-    # if next_scale_degree > 0:
-        # next_down_beat = next_chord.pitches[0] + next_chord.scale[next_scale_degree - 1]
+    if i < len(CHORD_LIST) - 1:
+        next_chord = CHORD_LIST[i + 1]
+        next_scale_degree = DOWN_BEAT_SCALE_DEGREES[i + 1]
+        if next_scale_degree > 0:
+            next_down_beat = next_chord.pitches[0] + next_chord.scale[next_scale_degree - 1]
 
     line_length = int(RHYTHM_LIST[i] / EN)
     
@@ -552,7 +604,7 @@ score.addPart(piano)
 score.addPart(sax)
 
 # View melody line. More options: https://jythonmusic.me/api/music-library-functions/view-functions/
-View.notation(sax)
+View.pianoRoll(sax)
 
 # Play score
 Play.midi(score)
