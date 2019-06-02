@@ -504,15 +504,17 @@ soloLineRhythms = []
 
 # I.e. 5th above root of chord, root, root, 2nd above root, etc...
 # Taken from Coltrane's first and sixth chorus
+# Third chorus is just some values I pick
 DOWN_BEAT_SCALE_DEGREES = [1, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
                            4, 5, 2, 1, 1, 1, 6, 1, 6, 3,
                            
                            6, 1, 1, 2, 5, 2, 1, 5, 3, 0, 7, 7, 1, 0, 1, 1,
                            3, 3, 1, 3, 2, 6, 0, 1, 2, 3,
                            
-                           5, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
-                           4, 5, 2, 1, 1, 1, 6, 1, 6, 3]
+                           2, 1, 1, 3, 0, 2, 3, 5, 1, 7, 6, 2, 0, 5, 4, 1,
+                           3, 5, 1, 2, 0, 3, 5, 1, 0, 2]
 
+# TODO: Some statistical analysis on all of his choruses to pick with randomness the starting pitches
 DIRECTIONS = [1, 1, 0, 0, 1, 0, 1,
     1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]
 DIRECTIONS *= NUM_CHORUSES
