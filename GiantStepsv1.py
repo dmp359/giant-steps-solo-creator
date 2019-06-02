@@ -231,6 +231,7 @@ viio_ = 8
 # GiantSteps.py
 # ------------------------------------------------------------------------------------------------------------------------------------------------------
 import random
+from gui import *
 
 # Create the necessary musical data
 score = Score("Giant Steps", 286.0)
@@ -598,8 +599,21 @@ Mod.tiePitches(soloMelody)
 score.addPart(piano)
 score.addPart(sax)
 
-# View melody line. More options: https://jythonmusic.me/api/music-library-functions/view-functions/
-View.pianoRoll(sax)
+def playMusic():
+    if pianoRollCheckbox.isChecked():
+        View.pianoRoll(sax) # View melody line. More options: https://jythonmusic.me/api/music-library-functions/view-functions/
+    Play.midi(score)
 
-# Play score
-Play.midi(score)
+# GUI
+WIDTH = 1200
+HEIGHT = 600
+d = Display("Simple GUI", WIDTH, HEIGHT)
+
+# Create components
+pianoRollCheckbox = Checkbox("Display Piano Roll")
+button1 = Button("Generate", playMusic)
+
+# Add components
+d.add(pianoRollCheckbox, 50, 50)
+d.add(button1, WIDTH / 2, HEIGHT - 50)
+
