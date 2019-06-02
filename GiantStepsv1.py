@@ -273,21 +273,14 @@ class JazzChord(Chord):
 #================================================================================
 pianoMelody1 = Phrase()
 piano.addPhrase(pianoMelody1)
-NUM_CHORUSES = 3
-#---------CHORDS-------------------
-# BMaj7 = JazzChord(B4, MAJOR_SEVENTH, 0)
-# D7 = JazzChord(D4, DOMINANT_SEVENTH, 0)
-# GMaj7 = JazzChord(G4, MAJOR_SEVENTH, 0)
-# Bb7 = JazzChord(BF4, DOMINANT_SEVENTH, 0)
-# Ebmaj7 = JazzChord(EF4, MAJOR_SEVENTH, 0)
-# Amin7 = JazzChord(A4, MINOR_SEVENTH, 0)
-# FS7 = JazzChord(FS4, DOMINANT_SEVENTH, 0)
-# CSmin7 = JazzChord(CS4, MINOR_SEVENTH, 0)
-# Fmin7 = JazzChord(F4, MINOR_SEVENTH, 0)
-#--------FORM----------------------
+DEFAULT_CHORUSES = 3
 
+numChoruses = DEFAULT_CHORUSES # later can be changed by slider
+
+#--------FORM----------------------
 # !WARNING! These must be setup like this due to how invert() works
-CHORD_LIST = [
+def generate_chorus_changes():
+    return [
     JazzChord(B4, MAJOR_SEVENTH, 0),
     JazzChord(D4, DOMINANT_SEVENTH, 0),
     JazzChord(G4, MAJOR_SEVENTH, 0),
@@ -313,69 +306,64 @@ CHORD_LIST = [
     JazzChord(BF4, DOMINANT_SEVENTH, 0),
     JazzChord(EF4, MAJOR_SEVENTH, 0),
     JazzChord(CS4, MINOR_SEVENTH, 0),
-    JazzChord(FS4, DOMINANT_SEVENTH, 0),
+    JazzChord(FS4, DOMINANT_SEVENTH, 0)
+    ]
+
+# GUI --------------------------------------------------------------
+WIDTH = 1200
+HEIGHT = 600
+d = Display("Simple GUI", WIDTH, HEIGHT)
+IMAGE_WIDTH = 300
+IMAGE_HEIGHT = 300
+img = Icon("sax.jpg", IMAGE_WIDTH, IMAGE_HEIGHT)
+
+# Functions
+def onSliderChange(value):
+    global numChoruses
+    numChoruses = value
+    chorusLabel.setText('# of Choruses: {}'.format(numChoruses))
+
+def onGenerate():
+    if pianoRollCheckbox.isChecked():
+        View.pianoRoll(sax) # View melody line. More options: https://jythonmusic.me/api/music-library-functions/view-functions/
+ 
+    # Add notes and rhythms to phrase
+    soloMelody.addNoteList(generate_solo(), soloLineRhythms)
+
+    # Tie (common tone) pitches that are the same note
+    Mod.tiePitches(soloMelody)
+    Play.midi(score)
     
-    JazzChord(B4, MAJOR_SEVENTH, 0),
-    JazzChord(D4, DOMINANT_SEVENTH, 0),
-    JazzChord(G4, MAJOR_SEVENTH, 0),
-    JazzChord(BF4, DOMINANT_SEVENTH, 0),
-    JazzChord(EF4, MAJOR_SEVENTH, 0),
-    JazzChord(A4, MINOR_SEVENTH, 0),
-    JazzChord(D4, DOMINANT_SEVENTH, 0),
-    JazzChord(G4, MAJOR_SEVENTH, 0),
-    JazzChord(BF4, DOMINANT_SEVENTH, 0),
-    JazzChord(EF4, MAJOR_SEVENTH, 0),
-    JazzChord(FS4, DOMINANT_SEVENTH, 0),
-    JazzChord(B4, MAJOR_SEVENTH, 0),
-    JazzChord(F4, MINOR_SEVENTH, 0),
-    JazzChord(BF4, DOMINANT_SEVENTH, 0),
-    JazzChord(EF4, MAJOR_SEVENTH, 0),
-    JazzChord(A4, MINOR_SEVENTH, 0),
-    JazzChord(D4, DOMINANT_SEVENTH, 0),
-    JazzChord(G4, MAJOR_SEVENTH, 0),
-    JazzChord(CS4, MINOR_SEVENTH, 0),
-    JazzChord(FS4, DOMINANT_SEVENTH, 0),
-    JazzChord(B4, MAJOR_SEVENTH, 0),
-    JazzChord(F4, MINOR_SEVENTH, 0),
-    JazzChord(BF4, DOMINANT_SEVENTH, 0),
-    JazzChord(EF4, MAJOR_SEVENTH, 0),
-    JazzChord(CS4, MINOR_SEVENTH, 0),
-    JazzChord(FS4, DOMINANT_SEVENTH, 0),
-    
-    JazzChord(B4, MAJOR_SEVENTH, 0),
-    JazzChord(D4, DOMINANT_SEVENTH, 0),
-    JazzChord(G4, MAJOR_SEVENTH, 0),
-    JazzChord(BF4, DOMINANT_SEVENTH, 0),
-    JazzChord(EF4, MAJOR_SEVENTH, 0),
-    JazzChord(A4, MINOR_SEVENTH, 0),
-    JazzChord(D4, DOMINANT_SEVENTH, 0),
-    JazzChord(G4, MAJOR_SEVENTH, 0),
-    JazzChord(BF4, DOMINANT_SEVENTH, 0),
-    JazzChord(EF4, MAJOR_SEVENTH, 0),
-    JazzChord(FS4, DOMINANT_SEVENTH, 0),
-    JazzChord(B4, MAJOR_SEVENTH, 0),
-    JazzChord(F4, MINOR_SEVENTH, 0),
-    JazzChord(BF4, DOMINANT_SEVENTH, 0),
-    JazzChord(EF4, MAJOR_SEVENTH, 0),
-    JazzChord(A4, MINOR_SEVENTH, 0),
-    JazzChord(D4, DOMINANT_SEVENTH, 0),
-    JazzChord(G4, MAJOR_SEVENTH, 0),
-    JazzChord(CS4, MINOR_SEVENTH, 0),
-    JazzChord(FS4, DOMINANT_SEVENTH, 0),
-    JazzChord(B4, MAJOR_SEVENTH, 0),
-    JazzChord(F4, MINOR_SEVENTH, 0),
-    JazzChord(BF4, DOMINANT_SEVENTH, 0),
-    JazzChord(EF4, MAJOR_SEVENTH, 0),
-    JazzChord(CS4, MINOR_SEVENTH, 0),
-    JazzChord(FS4, DOMINANT_SEVENTH, 0),
-]
+# Create components
+pianoRollCheckbox = Checkbox("Display Piano Roll")
+restCheckbox = Checkbox("Use rests")
+restCheckbox.check()
+button1 = Button("Generate", onGenerate)
+chorusSlider = Slider(HORIZONTAL, 1, 9, DEFAULT_CHORUSES, onSliderChange)
+chorusLabel = Label('# of Choruses: {}'.format(numChoruses))	
+
+# Add components to display
+d.add(pianoRollCheckbox, 50, 50)
+d.add(restCheckbox, 50, 100)
+d.add(chorusLabel, 50, 150)
+d.add(chorusSlider, 50, 160)
+d.add(button1, WIDTH / 2, HEIGHT - 50)
+d.add(img, WIDTH / 2 - IMAGE_WIDTH / 2 + 40, HEIGHT - IMAGE_HEIGHT - 100)
+
+# MUSIC --------------------------------------------------------------
+CHORD_LIST = []
+
+for i in range(numChoruses):
+    CHORD_LIST.extend(generate_chorus_changes())
+
 RHYTHM_LIST = [HN, HN, HN, HN, WN, HN, HN, HN, HN, HN, HN, WN, HN, HN, WN, 
                    HN, HN, WN, HN, HN, WN, HN, HN, WN, HN, HN]
-RHYTHM_LIST *= NUM_CHORUSES
+RHYTHM_LIST *= numChoruses
 #---------Comp the form-----------------------------------
 for chord, rhythm in zip(CHORD_LIST, RHYTHM_LIST):
     pianoMelody1.addNoteList([chord.pitches], [rhythm])
 #---------------------------------------------------------
+
 
 '''
 Algorithm
@@ -384,9 +372,6 @@ Given a starting pitch and an ending pitch, return a list of 4 pitches connectin
 the two in some sort of musical way within the chord. Does not include the ending pitch
 
 Direction of 0 means descend
-
-E.g F#5 Start. D5 end. 4 notes. Bmaj7 
-
 sp is starting pitch, or starting scale degree
 '''
 def create_line(start, end, jazz_chord, direction=1, num_notes=4, sp=0):
@@ -482,11 +467,14 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4, sp=0):
         line.append(jazz_chord.pitches[0] + jazz_chord.scale[4] - 12)
         line.append(jazz_chord.pitches[0] + jazz_chord.scale[2] - 12)
         line.append(jazz_chord.pitches[0])
-    else:
+    else: # Invalid starting tone should not happen
         assert(False)
     
-    for i in range(num_notes - len(line)):
-        line.append(REST) # !WARNING: THIS ALSO APPENDS TO THE CHORD if one is used!
+    if restCheckbox.isChecked():
+        for i in range(num_notes - len(line)):
+            line.append(REST) # !WARNING: THIS ALSO APPENDS TO THE CHORD if one is used!
+    else:
+        line *= (num_notes / len(line))
 
     if any(note < LOWEST_NOTE for note in line):
         line = map(lambda x: x + 12, line)
@@ -495,6 +483,7 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4, sp=0):
         line = map(lambda x: x - 12, line)
 
     return line
+
 #================================================================================
 # SOLOIST
 #================================================================================
@@ -509,111 +498,90 @@ soloLineRhythms = []
 DOWN_BEAT_SCALE_DEGREES = [1, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
                            4, 5, 2, 1, 1, 1, 6, 1, 6, 3,
                            
-                           6, 1, 1, 2, 5, 2, 1, 5, 3, 0, 7, 7, 1, 0, 1, 1,
-                           3, 3, 1, 3, 2, 6, 0, 1, 2, 3,
+                           1, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
+                           4, 5, 2, 1, 1, 1, 6, 1, 6, 3,
                            
-                           2, 1, 1, 3, 0, 2, 3, 5, 1, 7, 6, 2, 0, 5, 4, 1,
-                           3, 5, 1, 2, 0, 3, 5, 1, 0, 2]
+                           1, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
+                           4, 5, 2, 1, 1, 1, 6, 1, 6, 3]
 
 # TODO: Some statistical analysis on all of his choruses to pick with randomness the starting pitches
 DIRECTIONS = [1, 1, 0, 0, 1, 0, 1,
     1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]
-DIRECTIONS *= NUM_CHORUSES
+DIRECTIONS *= numChoruses
 
-# -----------Basic first pass. Arpeggiate-------------
-for i, chord in enumerate(CHORD_LIST):
-    assert(not any(note < 0 for note in chord.pitches), 'index {} at chord {}'.format(i, chord.pitches))
+def generate_solo():
+    # -----------Basic first pass. Arpeggiate-------------
+    for i, chord in enumerate(CHORD_LIST):
+        assert(not any(note < 0 for note in chord.pitches), 'index {} at chord {}'.format(i, chord.pitches))
 
-    starting_pitch = DOWN_BEAT_SCALE_DEGREES[i]
-    current_down_beat = REST # Later will be handled in create_line
+        starting_pitch = DOWN_BEAT_SCALE_DEGREES[i]
+        current_down_beat = REST # Later will be handled in create_line
 
-    if starting_pitch > 0:
-        current_down_beat = chord.pitches[0] + chord.scale[starting_pitch - 1]
-    
-    next_down_beat = 0
-    if i < len(CHORD_LIST) - 1:
-        next_chord = CHORD_LIST[i + 1]
-        next_scale_degree = DOWN_BEAT_SCALE_DEGREES[i + 1]
-        if next_scale_degree > 0:
-            next_down_beat = next_chord.pitches[0] + next_chord.scale[next_scale_degree - 1]
-
-    line_length = int(RHYTHM_LIST[i] / EN)
-    
-    # Create a line to connect to next_down_beat
-    assert(not any(note < 0 for note in chord.pitches), 'index {} at chord {}'.format(i, chord.pitches))
-    line = create_line(current_down_beat, next_down_beat, chord, DIRECTIONS[i], line_length,starting_pitch)
-    assert (line_length % len(line) is 0, 'Length of line is not 4 or 8. The line is {} expecting at index {}'.format(line, line_length))
-
-    # Add this line to list
-    for note in line:
-        soloLinePitches.append(note)
-        soloLineRhythms.append(EN)
-
-# -----------Second pass. Smooth out octaves-------------
-for i, pitch in enumerate(soloLinePitches):
-    if i >= len(soloLinePitches) - 4:
-        break
-    
-    if pitch < 0:
-        continue
-    
-    distance = pitch - soloLinePitches[i + 1]
-    
-    # Next pitch is below an octave away, so raise it up
-    # next_four = soloLinePitches[i + 1: i+ 4] # TODO. Fix octaves
-    if distance >= 12:
-        soloLinePitches[i + 1] += 12
-        soloLinePitches[i + 2] += 12
-        soloLinePitches[i + 3] += 12
-        soloLinePitches[i + 4] += 12
-
-    # Next pitch is above an octave up
-    if distance <= -12 :
-        soloLinePitches[i + 1] -= 12
-        soloLinePitches[i + 2] -= 12
-        soloLinePitches[i + 3] -= 12
-        soloLinePitches[i + 4] -= 12
+        if starting_pitch > 0:
+            current_down_beat = chord.pitches[0] + chord.scale[starting_pitch - 1]
         
-# -----------Third pass. Add rests---------------
-for i, pitch in enumerate(soloLinePitches):
-    if i >= len(soloLinePitches) - 1:
-        break
-    ## TODO --------------------------        
+        next_down_beat = 0
+        if i < len(CHORD_LIST) - 1:
+            next_chord = CHORD_LIST[i + 1]
+            next_scale_degree = DOWN_BEAT_SCALE_DEGREES[i + 1]
+            if next_scale_degree > 0:
+                next_down_beat = next_chord.pitches[0] + next_chord.scale[next_scale_degree - 1]
 
-# ---------Complete solo------------------------
-# For some reason, Jython needs me to redefine the RESTs as RESTs right here or else it
-# Throws an error. No idea why but this fixes it...
-for i, pitch in enumerate(soloLinePitches):
-    if pitch < 0:
-        soloLinePitches[i] = REST
+        line_length = int(RHYTHM_LIST[i] / EN)
         
-# Add notes and rhythms to phrase
-soloMelody.addNoteList(soloLinePitches, soloLineRhythms)
+        # Create a line to connect to next_down_beat
+        assert(not any(note < 0 for note in chord.pitches), 'index {} at chord {}'.format(i, chord.pitches))
+        line = create_line(current_down_beat, next_down_beat, chord, DIRECTIONS[i], line_length,starting_pitch)
+        assert (line_length % len(line) is 0, 'Length of line is not 4 or 8. The line is {} expecting at index {}'.format(line, line_length))
 
-# Tie (common tone) pitches that are the same note
-Mod.tiePitches(soloMelody)
+        # Add this line to list
+        for note in line:
+            soloLinePitches.append(note)
+            soloLineRhythms.append(EN)
+
+    # -----------Second pass. Smooth out octaves-------------
+    for i, pitch in enumerate(soloLinePitches):
+        if i >= len(soloLinePitches) - 4:
+            break
+        
+        if pitch < 0:
+            continue
+        
+        distance = pitch - soloLinePitches[i + 1]
+        
+        # Next pitch is below an octave away, so raise it up
+        # next_four = soloLinePitches[i + 1: i+ 4] # TODO. Fix octaves
+        if distance >= 12:
+            soloLinePitches[i + 1] += 12
+            soloLinePitches[i + 2] += 12
+            soloLinePitches[i + 3] += 12
+            soloLinePitches[i + 4] += 12
+
+        # Next pitch is above an octave up
+        if distance <= -12 :
+            soloLinePitches[i + 1] -= 12
+            soloLinePitches[i + 2] -= 12
+            soloLinePitches[i + 3] -= 12
+            soloLinePitches[i + 4] -= 12
+            
+    # -----------Third pass. Add rests---------------
+    for i, pitch in enumerate(soloLinePitches):
+        if i >= len(soloLinePitches) - 1:
+            break
+        ## TODO --------------------------        
+
+    # ---------Complete solo------------------------
+    # For some reason, Jython needs me to redefine the RESTs as RESTs right here or else it
+    # Throws an error. No idea why but this fixes it...
+    for i, pitch in enumerate(soloLinePitches):
+        if pitch < 0:
+            soloLinePitches[i] = REST
+    
+    return soloLinePitches
+
 #=======================================
 # PLAY
 #=======================================
 # Add parts to score
 score.addPart(piano)
 score.addPart(sax)
-
-def playMusic():
-    if pianoRollCheckbox.isChecked():
-        View.pianoRoll(sax) # View melody line. More options: https://jythonmusic.me/api/music-library-functions/view-functions/
-    Play.midi(score)
-
-# GUI
-WIDTH = 1200
-HEIGHT = 600
-d = Display("Simple GUI", WIDTH, HEIGHT)
-
-# Create components
-pianoRollCheckbox = Checkbox("Display Piano Roll")
-button1 = Button("Generate", playMusic)
-
-# Add components
-d.add(pianoRollCheckbox, 50, 50)
-d.add(button1, WIDTH / 2, HEIGHT - 50)
-
