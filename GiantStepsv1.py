@@ -609,8 +609,3 @@ def generate_solo():
             soloLinePitches[i] = REST
     
     return soloLinePitches
-
-#=======================================
-# PLAY
-#=======================================
-# Add parts to score
