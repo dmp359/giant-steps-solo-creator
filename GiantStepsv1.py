@@ -271,11 +271,25 @@ class JazzChord(Chord):
 #================================================================================
 # PIANO
 #================================================================================
-pianoMelody1 = Phrase()
-piano.addPhrase(pianoMelody1)
 DEFAULT_CHORUSES = 3
 
 numChoruses = DEFAULT_CHORUSES # later can be changed by slider
+
+# I.e. 5th above root of chord, root, root, 2nd above root, etc...
+# Taken from Coltrane's first chorus
+DEFAULT_DOWN_BEAT_SCALE_DEGREES = [1, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
+                        4, 5, 2, 1, 1, 1, 6, 1, 6, 3]
+
+ # TODO: Some statistical analysis on all of his choruses to pick with randomness the starting pitches
+DEFAULT_LINE_DIRECTIONS = [1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]
+
+
+chordList = []
+rhythmList = []
+downBeatScaleDegrees = DEFAULT_DOWN_BEAT_SCALE_DEGREES
+lineDirections = DEFAULT_LINE_DIRECTIONS
+
+
 
 #--------FORM----------------------
 # !WARNING! These must be setup like this due to how invert() works
@@ -309,6 +323,10 @@ def generate_chorus_changes():
     JazzChord(FS4, DOMINANT_SEVENTH, 0)
     ]
 
+def generate_chorus_chord_rhythms():
+    return [HN, HN, HN, HN, WN, HN, HN, HN, HN, HN, HN, WN, HN, HN, WN, 
+            HN, HN, WN, HN, HN, WN, HN, HN, WN, HN, HN]
+
 # GUI --------------------------------------------------------------
 WIDTH = 1200
 HEIGHT = 600
@@ -324,46 +342,79 @@ def onSliderChange(value):
     chorusLabel.setText('# of Choruses: {}'.format(numChoruses))
 
 def onGenerate():
+    global chordList, rhythmList, downBeatScaleDegrees, lineDirections
+    pianoMelody = Phrase()
+    piano.addPhrase(pianoMelody)
+    soloMelody = Phrase()
+    sax.addPhrase(soloMelody)
     if pianoRollCheckbox.isChecked():
         View.pianoRoll(sax) # View melody line. More options: https://jythonmusic.me/api/music-library-functions/view-functions/
  
-    # Add notes and rhythms to phrase
+    for i in range(numChoruses):
+        print('-----Creating chorus {}------'.format(i))
+        chordList.extend(generate_chorus_changes())
+        rhythmList.extend(generate_chorus_chord_rhythms())
+    
+    downBeatScaleDegrees *= numChoruses
+    lineDirections *= numChoruses
+
+    # Create solo notes
     soloMelody.addNoteList(generate_solo(), soloLineRhythms)
 
     # Tie (common tone) pitches that are the same note
     Mod.tiePitches(soloMelody)
+    
+    #---------Comp the form-----------------------------------
+    for chord, rhythm in zip(chordList, rhythmList):
+        pianoMelody.addNoteList([chord.pitches], [rhythm])
+    #---------------------------------------------------------
+    score.addPart(piano)
+    score.addPart(sax)
+    if not accompanimentCheckbox.isChecked():
+        piano.empty()
+    
+    # Play
     Play.midi(score)
     
+    # Reset all variables related to solo length
+    chordList = []
+    rhythmList = []
+    downBeatScaleDegrees = DEFAULT_DOWN_BEAT_SCALE_DEGREES
+    lineDirections = DEFAULT_LINE_DIRECTIONS
+    sax.empty()
+    piano.empty()
+    soloMelody = Phrase()
+    pianoMelody = Phrase()
+
 # Create components
+left_components = []
 pianoRollCheckbox = Checkbox("Display Piano Roll")
 restCheckbox = Checkbox("Use rests")
 restCheckbox.check()
-button1 = Button("Generate", onGenerate)
+accompanimentCheckbox = Checkbox("Play accompaniment")
+accompanimentCheckbox.check()
+generateButton = Button("Generate", onGenerate)
 chorusSlider = Slider(HORIZONTAL, 1, 9, DEFAULT_CHORUSES, onSliderChange)
 chorusLabel = Label('# of Choruses: {}'.format(numChoruses))	
 
+left_components.append(pianoRollCheckbox)
+left_components.append(restCheckbox)
+left_components.append(accompanimentCheckbox)
+
 # Add components to display
-d.add(pianoRollCheckbox, 50, 50)
-d.add(restCheckbox, 50, 100)
-d.add(chorusLabel, 50, 150)
-d.add(chorusSlider, 50, 160)
-d.add(button1, WIDTH / 2, HEIGHT - 50)
+X_START = 25
+Y_START = 50
+yOffset = Y_START
+for component in left_components:
+    d.add(component, X_START, yOffset)
+    yOffset += Y_START
+
+d.add(chorusLabel, X_START + 15, yOffset)
+d.add(chorusSlider, X_START, yOffset + 15)
+d.add(generateButton, WIDTH / 2, HEIGHT - 50)
 d.add(img, WIDTH / 2 - IMAGE_WIDTH / 2 + 40, HEIGHT - IMAGE_HEIGHT - 100)
 
 # MUSIC --------------------------------------------------------------
-CHORD_LIST = []
-
-for i in range(numChoruses):
-    CHORD_LIST.extend(generate_chorus_changes())
-
-RHYTHM_LIST = [HN, HN, HN, HN, WN, HN, HN, HN, HN, HN, HN, WN, HN, HN, WN, 
-                   HN, HN, WN, HN, HN, WN, HN, HN, WN, HN, HN]
-RHYTHM_LIST *= numChoruses
-#---------Comp the form-----------------------------------
-for chord, rhythm in zip(CHORD_LIST, RHYTHM_LIST):
-    pianoMelody1.addNoteList([chord.pitches], [rhythm])
-#---------------------------------------------------------
-
 
 '''
 Algorithm
@@ -379,7 +430,7 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4, sp=0):
         return [REST] * num_notes
 
     line = jazz_chord.pitches
-    assert(not any(note < 0 for note in line), 'num_notes {} at chord {}'.format(num_notes, chord.pitches))
+    assert(not any(note < 0 for note in line), 'num_notes {} at chord {}'.format(num_notes, jazz_chord.pitches))
     
     # If line starts on the root, arpeggiate a pentatonic scale lick. (Major) PENTATONIC_SCALE = [0, 2, 4, 7, 9]
     if sp is 1:
@@ -487,51 +538,31 @@ def create_line(start, end, jazz_chord, direction=1, num_notes=4, sp=0):
 #================================================================================
 # SOLOIST
 #================================================================================
-soloMelody = Phrase()
-sax.addPhrase(soloMelody)
 soloLinePitches = []
 soloLineRhythms = []
 
-# I.e. 5th above root of chord, root, root, 2nd above root, etc...
-# Taken from Coltrane's first and sixth chorus
-# Third chorus is just some values I pick
-DOWN_BEAT_SCALE_DEGREES = [1, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
-                           4, 5, 2, 1, 1, 1, 6, 1, 6, 3,
-                           
-                           1, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
-                           4, 5, 2, 1, 1, 1, 6, 1, 6, 3,
-                           
-                           1, 1, 1, 2, 1, 5, 3, 3, 3, 1, 7, 7, 4, 5, 5, 5,
-                           4, 5, 2, 1, 1, 1, 6, 1, 6, 3]
-
-# TODO: Some statistical analysis on all of his choruses to pick with randomness the starting pitches
-DIRECTIONS = [1, 1, 0, 0, 1, 0, 1,
-    1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0]
-DIRECTIONS *= numChoruses
-
 def generate_solo():
     # -----------Basic first pass. Arpeggiate-------------
-    for i, chord in enumerate(CHORD_LIST):
+    for i, chord in enumerate(chordList):
         assert(not any(note < 0 for note in chord.pitches), 'index {} at chord {}'.format(i, chord.pitches))
 
-        starting_pitch = DOWN_BEAT_SCALE_DEGREES[i]
+        starting_pitch = downBeatScaleDegrees[i]
         current_down_beat = REST # Later will be handled in create_line
 
         if starting_pitch > 0:
             current_down_beat = chord.pitches[0] + chord.scale[starting_pitch - 1]
         
         next_down_beat = 0
-        if i < len(CHORD_LIST) - 1:
-            next_chord = CHORD_LIST[i + 1]
-            next_scale_degree = DOWN_BEAT_SCALE_DEGREES[i + 1]
+        if i < len(chordList) - 1:
+            next_chord = chordList[i + 1]
+            next_scale_degree = downBeatScaleDegrees[i + 1]
             if next_scale_degree > 0:
                 next_down_beat = next_chord.pitches[0] + next_chord.scale[next_scale_degree - 1]
 
-        line_length = int(RHYTHM_LIST[i] / EN)
+        line_length = int(rhythmList[i] / EN)
         
         # Create a line to connect to next_down_beat
-        assert(not any(note < 0 for note in chord.pitches), 'index {} at chord {}'.format(i, chord.pitches))
-        line = create_line(current_down_beat, next_down_beat, chord, DIRECTIONS[i], line_length,starting_pitch)
+        line = create_line(current_down_beat, next_down_beat, chord, lineDirections[i], line_length, starting_pitch)
         assert (line_length % len(line) is 0, 'Length of line is not 4 or 8. The line is {} expecting at index {}'.format(line, line_length))
 
         # Add this line to list
@@ -583,5 +614,3 @@ def generate_solo():
 # PLAY
 #=======================================
 # Add parts to score
-score.addPart(piano)
-score.addPart(sax)
