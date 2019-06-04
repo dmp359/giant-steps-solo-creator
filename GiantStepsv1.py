@@ -233,8 +233,9 @@ viio_ = 8
 import random
 from gui import *
 
-# Create the necessary musical data
-score = Score("Giant Steps", 286.0)
+
+DEFAULT_BPM = 286.0
+BPM = DEFAULT_BPM
 
 piano = Part(BRIGHT_ACOUSTIC, 0)  # Piano to MIDI channel 0
 sax = Part(TENOR_SAX, 1)  # Sax to MIDI channel 1
@@ -371,6 +372,10 @@ def onGenerate():
     for chord, rhythm in zip(chordList, rhythmList):
         pianoMelody.addNoteList([chord.pitches], [rhythm])
     #---------------------------------------------------------
+    
+    # Create the necessary musical data
+    BPM = float(bpmField.getText())
+    score = Score("Giant Steps", BPM)
     score.addPart(piano)
     score.addPart(sax)
     if not accompanimentCheckbox.isChecked():
@@ -384,6 +389,7 @@ def onGenerate():
     rhythmList = []
     downBeatScaleDegrees = DEFAULT_DOWN_BEAT_SCALE_DEGREES
     lineDirections = DEFAULT_LINE_DIRECTIONS
+    score.empty()
     sax.empty()
     piano.empty()
     soloMelody = Phrase()
@@ -400,14 +406,17 @@ accompanimentCheckbox = Checkbox("Play accompaniment")
 accompanimentCheckbox.check()
 generateButton = Button("Generate", onGenerate)
 chorusSlider = Slider(HORIZONTAL, 1, 9, DEFAULT_CHORUSES, onSliderChange)
-chorusLabel = Label('# of Choruses: {}'.format(numChoruses))	
+chorusLabel = Label('# of Choruses: {}'.format(numChoruses))
+bpmLabel = Label('BPM:')
+bpmField = TextField(str(DEFAULT_BPM), 3)
+
 
 left_components.append(pianoRollCheckbox)
 left_components.append(scoreCheckbox)
 left_components.append(restCheckbox)
 left_components.append(accompanimentCheckbox)
 
-# Add components to display
+# Add left components to display
 X_START = 25
 Y_START = 50
 yOffset = Y_START
@@ -415,8 +424,17 @@ for component in left_components:
     d.add(component, X_START, yOffset)
     yOffset += Y_START
 
+# Add the BPM label and text field below that
+d.add(bpmLabel, X_START + 10, yOffset)
+d.add(bpmField, X_START + 50, yOffset - 5)
+
+yOffset += Y_START
+# Add the chorus label and slider below the left components. Needs custom spacing
 d.add(chorusLabel, X_START + 15, yOffset)
 d.add(chorusSlider, X_START, yOffset + 15)
+
+
+# Add generate button and picture
 d.add(generateButton, WIDTH / 2, HEIGHT - 50)
 d.add(img, WIDTH / 2 - IMAGE_WIDTH / 2 + 40, HEIGHT - IMAGE_HEIGHT - 100)
 
