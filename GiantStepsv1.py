@@ -408,7 +408,7 @@ generateButton = Button("Generate", onGenerate)
 chorusSlider = Slider(HORIZONTAL, 1, 9, DEFAULT_CHORUSES, onSliderChange)
 chorusLabel = Label('# of Choruses: {}'.format(numChoruses))
 bpmLabel = Label('BPM:')
-bpmField = TextField(str(DEFAULT_BPM), 3)
+bpmField = TextField(str(DEFAULT_BPM), 4)
 
 
 left_components.append(pianoRollCheckbox)
