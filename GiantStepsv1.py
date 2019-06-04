@@ -350,6 +350,9 @@ def onGenerate():
     if pianoRollCheckbox.isChecked():
         View.pianoRoll(sax) # View melody line. More options: https://jythonmusic.me/api/music-library-functions/view-functions/
  
+    if scoreCheckbox.isChecked():
+        View.notation(sax)
+
     for i in range(numChoruses):
         print('-----Creating chorus {}------'.format(i))
         chordList.extend(generate_chorus_changes())
@@ -389,6 +392,8 @@ def onGenerate():
 # Create components
 left_components = []
 pianoRollCheckbox = Checkbox("Display Piano Roll")
+scoreCheckbox = Checkbox("Display Score")
+
 restCheckbox = Checkbox("Use rests")
 restCheckbox.check()
 accompanimentCheckbox = Checkbox("Play accompaniment")
@@ -398,6 +403,7 @@ chorusSlider = Slider(HORIZONTAL, 1, 9, DEFAULT_CHORUSES, onSliderChange)
 chorusLabel = Label('# of Choruses: {}'.format(numChoruses))	
 
 left_components.append(pianoRollCheckbox)
+left_components.append(scoreCheckbox)
 left_components.append(restCheckbox)
 left_components.append(accompanimentCheckbox)
 
@@ -582,11 +588,11 @@ def generate_solo():
         
         # Next pitch is below an octave away, so raise it up
         # next_four = soloLinePitches[i + 1: i+ 4] # TODO. Fix octaves
-        if distance >= 12:
-            soloLinePitches[i + 1] += 12
-            soloLinePitches[i + 2] += 12
-            soloLinePitches[i + 3] += 12
-            soloLinePitches[i + 4] += 12
+        # if distance >= 12:
+        #     soloLinePitches[i + 1] += 12
+        #     soloLinePitches[i + 2] += 12
+        #     soloLinePitches[i + 3] += 12
+        #     soloLinePitches[i + 4] += 12
 
         # Next pitch is above an octave up
         if distance <= -12 :
