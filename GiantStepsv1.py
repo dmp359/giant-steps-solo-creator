@@ -348,11 +348,7 @@ def onGenerate():
     piano.addPhrase(pianoMelody)
     soloMelody = Phrase()
     sax.addPhrase(soloMelody)
-    if pianoRollCheckbox.isChecked():
-        View.pianoRoll(sax) # View melody line. More options: https://jythonmusic.me/api/music-library-functions/view-functions/
- 
-    if scoreCheckbox.isChecked():
-        View.notation(sax)
+
 
     for i in range(numChoruses):
         print('-----Creating chorus {}------'.format(i))
@@ -381,6 +377,12 @@ def onGenerate():
     if not accompanimentCheckbox.isChecked():
         piano.empty()
     
+    if pianoRollCheckbox.isChecked():
+        View.pianoRoll(sax) # View melody line. More options: https://jythonmusic.me/api/music-library-functions/view-functions/
+ 
+    if scoreCheckbox.isChecked():
+        View.notation(sax)
+
     # Play
     Play.midi(score)
     
@@ -605,7 +607,7 @@ def generate_solo():
         distance = pitch - soloLinePitches[i + 1]
         
         # Next pitch is below an octave away, so raise it up
-        # next_four = soloLinePitches[i + 1: i+ 4] # TODO. Fix octaves
+        # next_four = soloLinePitches[i + 1: i+ 4]
         # if distance >= 12:
         #     soloLinePitches[i + 1] += 12
         #     soloLinePitches[i + 2] += 12
@@ -620,10 +622,9 @@ def generate_solo():
             soloLinePitches[i + 4] -= 12
             
     # -----------Third pass. Add rests---------------
-    for i, pitch in enumerate(soloLinePitches):
-        if i >= len(soloLinePitches) - 1:
-            break
-        ## TODO --------------------------        
+    # for i, pitch in enumerate(soloLinePitches):
+    #     if i >= len(soloLinePitches) - 1:
+    #         break
 
     # ---------Complete solo------------------------
     # For some reason, Jython needs me to redefine the RESTs as RESTs right here or else it
