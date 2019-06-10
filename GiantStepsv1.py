@@ -368,20 +368,21 @@ def onGenerate():
     for chord, rhythm in zip(chordList, rhythmList):
         pianoMelody.addNoteList([chord.pitches], [rhythm])
     #---------------------------------------------------------
-    
+
     # Create the necessary musical data
     BPM = float(bpmField.getText())
     score = Score("Giant Steps", BPM)
     score.addPart(piano)
     score.addPart(sax)
+
     if not accompanimentCheckbox.isChecked():
         piano.empty()
     
     if pianoRollCheckbox.isChecked():
-        View.pianoRoll(sax) # View melody line. More options: https://jythonmusic.me/api/music-library-functions/view-functions/
+        View.pianoRoll(soloMelody) # View melody line. More options: https://jythonmusic.me/api/music-library-functions/view-functions/
  
     if scoreCheckbox.isChecked():
-        View.notation(sax)
+        View.notation(soloMelody)
 
     # Play
     Play.midi(score)
